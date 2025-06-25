@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard de Ordens de Serviço</h1>
+<p>Total Valor Serviços: R$ {{ "%.2f"|format(total) }}</p>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Solicitante</th>
+            <th>Equipamento</th>
+            <th>Setor</th>
+            <th>Status</th>
+            <th>Data Solicitação</th>
+            <th>Valor Serviço</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for os in ordens %}
+        <tr>
+           <td>{{ os['id'] }}</td>
+            <td>{{ os['cliente'] }}</td>
+            <td>{{ os['solicitante'] }}</td>
+            <td>{{ os['equipamento'] }}</td>
+            <td>{{ os['setor'] }}</td>
+            <td>{{ os['status'] }}</td>
+            <td>{{ os['data_solicitacao'] }}</td>
+            <td>R$ {{ "%.2f"|format(os['valor_servico']) }}</td>
+          <td>
+                <a href="{{ url_for('main.alterar_os', os_id=os['id']) }}" class="btn btn-sm btn-primary">Editar</a>
+                <a href="{{ url_for('main.excluir_os_route', os_id=os['id']) }}" class="btn btn-sm btn-danger" onclick="return confirm('Confirma exclusão?')">Excluir</a>
+                <a href="{{ url_for('main.relatorio_os', os_id=os['id']) }}" class="btn btn-sm btn-secondary">PDF</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9">Nenhuma ordem de serviço cadastrada.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

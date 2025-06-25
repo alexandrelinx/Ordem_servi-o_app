@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Alterar Ordem de Serviço{% endblock %}
+{% block content %}
+<h2>Alterar Ordem de Serviço #{{ os_registro[0] }}</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label>Cliente</label>
+        <input name="cliente" list="clientes" class="form-control" required value="{{ os_registro[1] }}" />
+        <datalist id="clientes">
+            {% for c in clientes %}
+                <option value="{{ c }}" {% if c == os_registro[1] %}selected{% endif %}></option>
+            {% endfor %}
+        </datalist>
+    </div>
+    <div class="mb-3">
+        <label>Solicitante</label>
+        <input name="solicitante" list="solicitantes" class="form-control" required value="{{ os_registro[2] }}" />
+        <datalist id="solicitantes">
+            {% for s in solicitantes %}
+                <option value="{{ s }}" {% if s == os_registro[2] %}selected{% endif %}></option>
+            {% endfor %}
+        </datalist>
+    </div>
+    <div class="mb-3">
+        <label>Equipamento</label>
+        <input name="equipamento" list="equipamentos" class="form-control" required value="{{ os_registro[3] }}" />
+        <datalist id="equipamentos">
+            {% for e in equipamentos %}
+                <option value="{{ e }}" {% if e == os_registro[3] %}selected{% endif %}></option>
+            {% endfor %}
+        </datalist>
+    </div>
+    <div class="mb-3">
+        <label>Setor</label>
+        <input name="setor" list="setores" class="form-control" required value="{{ os_registro[4] }}" />
+        <datalist id="setores">
+            {% for se in setores %}
+                <option value="{{ se }}" {% if se == os_registro[4] %}selected{% endif %}></option>
+            {% endfor %}
+        </datalist>
+    </div>
+    <div class="mb-3">
+        <label>Status</label>
+        <select name="status" class="form-select" required>
+            {% for st in status_list %}
+                <option value="{{ st }}" {% if st == os_registro[5] %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Data Solicitação</label>
+        <input type="date" name="data_solicitacao" class="form-control" required value="{{ os_registro[6] }}" />
+    </div>
+    <div class="mb-3">
+        <label>Hora Solicitação</label>
+        <input type="time" name="hora_solicitacao" class="form-control" required value="{{ os_registro[7] }}" />
+    </div>
+    <div class="mb-3">
+        <label>Problema</label>
+        <textarea name="problema" class="form-control" rows="2" required>{{ os_registro[8] }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label>Análise Problema</label>
+        <textarea name="analise_problema" class="form-control" rows="2">{{ os_registro[9] }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label>Solução</label>
+        <textarea name="solucao" class="form-control" rows="2">{{ os_registro[10] }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label>Valor Serviço</label>
+        <input type="number" step="0.01" name="valor_servico" class="form-control" value="{{ os_registro[11] }}" />
+    </div>
+    <div class="mb-3">
+        <label>Data Conclusão</label>
+        <input type="date" name="data_conclusao" class="form-control" value="{{ os_registro[12] }}" />
+    </div>
+    <div class="mb-3">
+        <label>Hora Conclusão</label>
+        <input type="time" name="hora_conclusao" class="form-control" value="{{ os_registro[13] }}" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+</form>
+{% endblock %}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Ordem de Serviço{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      overflow-x: hidden;
+    }
+    /* Sidebar */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 250px;
+      background-color: #0d6efd; /* Bootstrap primary color */
+      padding-top: 1rem;
+      color: white;
+    }
+    #sidebar .nav-link {
+      color: white;
+    }
+    #sidebar .nav-link:hover, #sidebar .nav-link.active {
+      background-color: #0b5ed7;
+      color: white;
+    }
+    #content {
+      margin-left: 250px;
+      padding: 2rem;
+    }
+    /* Submenu toggle style */
+    .submenu {
+      padding-left: 1rem;
+    }
+    .submenu .nav-link {
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav id="sidebar" class="d-flex flex-column">
+  <a href="{{ url_for('main.dashboard') }}" class="navbar-brand px-3 mb-4 fs-4 text-white">OS System</a>
+
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuOs" role="button" aria-expanded="false" aria-controls="submenuOs">
+        OS
+      </a>
+      <div class="collapse" id="submenuOs">
+        <ul class="nav flex-column submenu">
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#submenuCadastro" aria-expanded="false" aria-controls="submenuCadastro">
+              Cadastro
+            </a>
+            <div class="collapse" id="submenuCadastro">
+              <ul class="nav flex-column submenu">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('main.nova_os') }}">Nova OS</a>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#submenuConsulta" aria-expanded="false" aria-controls="submenuConsulta">
+              Consulta
+            </a>
+            <div class="collapse" id="submenuConsulta">
+              <ul class="nav flex-column submenu">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('main.dashboard') }}">Consultar OS</a>
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<div id="content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
