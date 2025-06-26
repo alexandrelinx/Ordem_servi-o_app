@@ -70,11 +70,25 @@
             <div class="collapse" id="submenuConsulta">
               <ul class="nav flex-column submenu">
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('main.dashboard') }}">Consultar OS</a>
+                  <a class="nav-link" href="{{ url_for('main.consultar_os') }}">Consultar OS</a>
                 </li>
               </ul>
             </div>
           </li>
+        </ul>
+      </div>
+    </li>
+<!-- NOVO MENU RELATÓRIOS -->
+    <li class="nav-item mt-3">
+      <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuRelatorios" role="button" aria-expanded="false" aria-controls="submenuRelatorios">
+        Relatórios
+      </a>
+      <div class="collapse" id="submenuRelatorios">
+        <ul class="nav flex-column submenu">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.relatorio_os_cliente') }}">Relatório OS por Cliente</a>
+          </li>
+          <!-- Se quiser adicionar outros relatórios aqui, pode colocar -->
         </ul>
       </div>
     </li>

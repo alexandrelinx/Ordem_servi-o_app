@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Consulta de Ordens de Serviço{% endblock %}
+{% block content %}
+<h1>Consulta de Ordens de Serviço</h1>
+
+<!-- Formulário de filtro -->
+<form method="get" class="mb-4">
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="cliente" class="col-form-label">Cliente:</label>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="cliente" name="cliente" class="form-control" value="{{ cliente or '' }}" placeholder="Nome do cliente">
+        </div>
+        <div class="col-auto">
+            <label for="status" class="col-form-label">Status:</label>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="status" name="status" class="form-control" value="{{ status or '' }}" placeholder="Status">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{{ url_for('main.consultar_os') }}" class="btn btn-secondary">Limpar</a>
+        </div>
+    </div>
+</form>
+
+<p><strong>Total Valor Serviços: </strong>R$ {{ "%.2f"|format(total) }}</p>
+
+<table class="table table-striped table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Solicitante</th>
+            <th>Equipamento</th>
+            <th>Setor</th>
+             <th>Problema</th>
+            <th>Status</th>
+            <th>Data Solicitação</th>
+            <th>Valor Serviço</th>
+            <th>Ações</th>
+           
+        </tr>
+    </thead>
+    <tbody>
+        {% for os in ordens %}
+        <tr>
+            <td>{{ os['id'] }}</td>
+            <td>{{ os['cliente'] or '—' }}</td>
+            <td>{{ os['solicitante'] or '—' }}</td>
+            <td>{{ os['equipamento'] or '—' }}</td>
+            <td>{{ os['setor'] or '—' }}</td>
+            <td>{{ os['problema'] or '—' }}</td>
+            <td>{{ os['status'] or '—' }}</td>
+            <td>{{ os['data_solicitacao'] or '—' }}</td>
+            <td>R$ {{ "%.2f"|format(os['valor_servico'] or 0) }}</td>
+           <td>
+              <a href="{{ url_for('main.alterar_os', os_id=os['id']) }}" class="btn btn-sm btn-primary" title="Editar">✏️</a>
+              <a href="{{ url_for('main.excluir_os_route', os_id=os['id']) }}" class="btn btn-sm btn-danger" title="Excluir" onclick='return confirm("Confirma exclusão da OS #{{ os["id"] }}?")'>🗑️</a>
+               <a href="{{ url_for('main.relatorio_os', os_id=os['id']) }}" class="btn btn-sm btn-secondary" title="Gerar PDF">📄</a>
+           </td>
+
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="9" class="text-center">Nenhuma ordem de serviço encontrada.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
