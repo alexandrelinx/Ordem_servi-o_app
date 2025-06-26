@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Relatório por Cliente{% endblock %}
+
+{% block content %}
+<h2>Relatório de Ordens de Serviço por Cliente</h2>
+<form method="get" class="row g-3 align-items-end mb-4">
+  <div class="col-auto">
+    <label for="cliente" class="form-label">Filtrar por Cliente:</label>
+    <select name="cliente" id="cliente" class="form-select">
+      <option value="">Todos</option>
+      {% for nome in clientes %}
+        <option value="{{ nome }}" {% if nome == cliente_selecionado %}selected{% endif %}>{{ nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+  </div>
+
+  <div class="col-auto">
+    <!-- Botão para gerar PDF -->
+    <a href="{{ url_for('main.relatorio_os_cliente_pdf', cliente=cliente_selecionado) }}" class="btn btn-danger">Gerar PDF</a>
+  </div>
+</form>
+
+{% if dados %}
+  {% for cliente, meses in dados.items() %}
+    <h4 class="mt-4">{{ cliente }}</h4>
+    {% for mes, os_list in meses.items() %}
+      <h5 class="text-muted">{{ mes }}</h5>
+      <table class="table table-sm table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Solicitante</th>
+            <th>Data Solicitação</th>
+            <th>Equipamento</th>
+            <th>Problema</th>
+            <th>Data Conclusão</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for os in os_list %}
+          <tr>
+            <td>{{ os.solicitante }}</td>
+            <td>{{ os.data_solicitacao }}</td>
+            <td>{{ os.equipamento }}</td>
+            <td>{{ os.problema }}</td>
+            <td>{{ os.data_conclusao }}</td>
+            <td>R$ {{ "%.2f"|format(os.valor_servico) }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td colspan="5" class="text-end"><strong>Total do Mês:</strong></td>
+            <td><strong>R$ {{ "%.2f"|format(totais.get(cliente, {}).get(mes, 0.0)) }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    {% endfor %}
+  {% endfor %}
+{% else %}
+  <p>Nenhuma Ordem de Serviço encontrada para exibir.</p>
+{% endif %}
+
+{% endblock %}

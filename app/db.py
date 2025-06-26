@@ -157,10 +157,11 @@ def obter_ou_criar_id(conn, tabela, nome):
         conn.commit()
         return cursor.lastrowid
 
-def obter_os():
+def obter_os(cliente=None, status=None):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("""
+   # cursor.execute("""
+    query ="""
     SELECT
         s.id,
         c.nome as cliente,
@@ -182,8 +183,23 @@ def obter_os():
     LEFT JOIN equipamentos e ON s.equipamento_id = e.id
     LEFT JOIN setores se ON s.setor_id = se.id
     LEFT JOIN status_atendimentos st ON s.status_id = st.id
-    ORDER BY s.id DESC
-    """)
+    """
+    conditions = []
+    params = []
+
+    if cliente:
+        conditions.append("c.nome = ?")
+        params.append(cliente)
+    if status:
+        conditions.append("st.nome = ?")
+        params.append(status)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY s.id DESC"
+
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
@@ -268,7 +284,7 @@ def obter_relatorio_os_por_cliente():
             mes = datetime.strptime(data_solicitacao, "%Y-%m-%d").strftime("%Y-%m")
         except Exception:
             mes = "Data Inválida"
-
+          
         os_info = {
             "solicitante": row["solicitante"] or "",
             "data_solicitacao": data_solicitacao or "",
@@ -331,3 +347,71 @@ def somar_valores():
     total = cursor.fetchone()[0]
     conn.close()
     return total or 0
+
+
+
+def obter_relatorio_os_por_cliente_com_totais(cliente=None):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    if cliente:
+        cursor.execute("""
+        SELECT
+            c.nome as cliente,
+            so.nome as solicitante,
+            s.data_solicitacao,
+            s.problema,
+            e.nome as equipamento,
+            s.data_conclusao,
+            s.valor_servico
+        FROM solicitacoes s
+        LEFT JOIN clientes c ON s.cliente_id = c.id
+        LEFT JOIN solicitantes so ON s.solicitante_id = so.id
+        LEFT JOIN equipamentos e ON s.equipamento_id = e.id
+        WHERE c.nome = ?
+        ORDER BY c.nome, s.data_solicitacao
+        """, (cliente,))
+    else:
+        cursor.execute("""
+        SELECT
+            c.nome as cliente,
+            so.nome as solicitante,
+            s.data_solicitacao,
+            s.problema,
+            e.nome as equipamento,
+            s.data_conclusao,
+            s.valor_servico
+        FROM solicitacoes s
+        LEFT JOIN clientes c ON s.cliente_id = c.id
+        LEFT JOIN solicitantes so ON s.solicitante_id = so.id
+        LEFT JOIN equipamentos e ON s.equipamento_id = e.id
+        ORDER BY c.nome, s.data_solicitacao
+        """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    resultado = defaultdict(lambda: defaultdict(list))
+    totais = defaultdict(lambda: defaultdict(float))  # cliente -> mes -> total
+
+    for row in rows:
+        cliente_nome = row["cliente"] or "Sem Cliente"
+        data_solicitacao = row["data_solicitacao"]
+        try:
+            mes = datetime.strptime(data_solicitacao, "%Y-%m-%d").strftime("%Y-%m")
+        except Exception:
+            mes = "Data Inválida"
+
+        os_info = {
+            "solicitante": row["solicitante"] or "",
+            "data_solicitacao": data_solicitacao or "",
+            "problema": row["problema"] or "",
+            "equipamento": row["equipamento"] or "",
+            "data_conclusao": row["data_conclusao"] or "",
+            "valor_servico": row["valor_servico"] or 0.0,
+        }
+
+        resultado[cliente_nome][mes].append(os_info)
+        totais[cliente_nome][mes] += os_info["valor_servico"]
+
+    return resultado, totais
