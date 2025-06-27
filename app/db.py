@@ -46,6 +46,16 @@ def criar_tabela():
         nome TEXT UNIQUE NOT NULL
     )""")
 
+    
+    cursor.execute("""   
+    CREATE TABLE IF NOT EXISTS usuario (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario TEXT UNIQUE NOT NULL,
+        senha_hash TEXT NOT NULL
+     )""")
+     
+
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS solicitacoes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
