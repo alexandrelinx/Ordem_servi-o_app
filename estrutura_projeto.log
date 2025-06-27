@@ -1,0 +1,235 @@
+├── .git
+│   ├── COMMIT_EDITMSG
+│   ├── HEAD
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   ├── sendemail-validate.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       └── remotes
+│   ├── objects
+│   │   ├── 07
+│   │   │   └── f7bb80f3174d9eb8471cac7fe0b52544cb63c1
+│   │   ├── 08
+│   │   │   └── 85f2c3028d4337902dec32f4703d658c3bf2b9
+│   │   ├── 0a
+│   │   │   └── 1d19220330aa20509a99a3de13ec41fcdbbafb
+│   │   ├── 14
+│   │   │   └── 600cdae2a971368b8d32b73631715e1461aa71
+│   │   ├── 15
+│   │   │   └── 4bceb4cff9e43d4eb2006980da7073be7b82b0
+│   │   ├── 21
+│   │   │   └── e5aed8c15d24b8eec74061b51c9f878619d802
+│   │   ├── 22
+│   │   │   └── 13c21c0f734619df4e96753fb56638c1949568
+│   │   ├── 2e
+│   │   │   └── 21a712c6bc2875c9136f4c6469e2a11e027a7c
+│   │   ├── 34
+│   │   │   └── b4518c8efff19ef11092a9cccdd60b3c7ebe0f
+│   │   ├── 3a
+│   │   │   └── 937ce681b5989e94b2c570b866a53ab19ba733
+│   │   ├── 3c
+│   │   │   └── 01c75247e3a4380bfc2315ce3ff501b20b13b8
+│   │   ├── 3d
+│   │   │   └── 98958b255b872d1830d69feddd190244516f10
+│   │   ├── 41
+│   │   │   └── 41f27b886f3a6845eef8a636e58f8ae09ef324
+│   │   ├── 42
+│   │   │   └── 61823dcb5e654866bc8f4223e7c076db7596e9
+│   │   ├── 47
+│   │   │   └── 65d54bbc02a62339bf82aad37575e1e7775a2a
+│   │   ├── 4b
+│   │   │   └── 825dc642cb6eb9a060e54bf8d69288fbee4904
+│   │   ├── 50
+│   │   │   └── 1930de2a932b30f0b3dcea839a3de5605f3061
+│   │   ├── 5b
+│   │   │   └── 320c982e1ad90dbd1b006de058bc70bdddd7d0
+│   │   ├── 5f
+│   │   │   └── 8b14e8227534773d99f4640eef9d56dbcea794
+│   │   ├── 60
+│   │   │   └── 19b1f0ca2a173b2c065b249f8eed63d8844cfb
+│   │   ├── 63
+│   │   │   └── 77b3a804a371d137b6415b9faf32cdacbb2721
+│   │   ├── 6c
+│   │   │   └── d2d540c91e687de05ccf3354b2449de9e786f5
+│   │   ├── 73
+│   │   │   └── 5a7d8bab4ac4626d99074739c2477e4263a998
+│   │   ├── 74
+│   │   │   └── f0b96119b56afa95822a7f8676d05cb19bf658
+│   │   ├── 77
+│   │   │   ├── 10a84166c1f3e48b91f1131aecab105595455a
+│   │   │   ├── 3f76f3fc13986b86721a8cb15acbe53c59393e
+│   │   │   └── e717c7e767ff282b2dbbc98b4c39c3e86f8119
+│   │   ├── 78
+│   │   │   └── 560c9cd2070260c7c5cea99395ac123b1c91ed
+│   │   ├── 87
+│   │   │   └── e7bed4f1dc3f4d215c1516868997c624e98d7c
+│   │   ├── 8c
+│   │   │   └── 28eeb838b2a5df79d2f6109aaeca96f632cbfb
+│   │   ├── a2
+│   │   │   └── 455e4cadd76f10a9836cd91ed619bf0cf7bdf7
+│   │   ├── ad
+│   │   │   ├── 2179400dec98056a07a0fce6e97c157c359416
+│   │   │   └── bbff251f1aa4187e526f792ca427cf1557d901
+│   │   ├── af
+│   │   │   └── 6f4bf14d03bd1b1b36d0a610b9895ec5983ab2
+│   │   ├── b0
+│   │   │   └── 8490733b6a3d34a9650fd0cb79ba0719c8576d
+│   │   ├── b4
+│   │   │   └── 60f8ecc3d2a4808cf3dc45b18d623c01813d84
+│   │   ├── b6
+│   │   │   └── 6af131ae56055a3a7e3e9866b28c95a2bbad0a
+│   │   ├── d0
+│   │   │   └── 3928d53693fd01baeb0d711f99d46fae67f35b
+│   │   ├── d3
+│   │   │   └── b076aac2e3d0c7cc6a3ee6763d0ca945c9de3f
+│   │   ├── e2
+│   │   │   └── 7ed36afbd17aff97e9c2d644868aca39699831
+│   │   ├── e6
+│   │   │   └── 9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+│   │   ├── e8
+│   │   │   └── 7ffe5370ee601f373fb13554f6e510c3cc7b19
+│   │   ├── eb
+│   │   │   └── e73f1fd62adbf0e22fd0bda51c578cfb49ed40
+│   │   ├── ec
+│   │   │   └── 0bbd2d8144501b3062b5ea07bd8bbbb89f3d0f
+│   │   ├── ef
+│   │   │   └── 03370eac3fc0c916524c62be70e66e8109d04c
+│   │   ├── f3
+│   │   │   └── 8fb34b9058101b4da20e16ecd3f7a0805e21fa
+│   │   ├── fc
+│   │   │   └── b9b164c01c295e9e22a78a6264fe955ffe2d1b
+│   │   ├── fd
+│   │   │   └── 366baabf33bcd399cb805de3be0adc0d0f5319
+│   │   ├── ff
+│   │   │   └── 89c6fcafde50a4a85e364dc84dd003bd640c1b
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       │   └── master
+│       ├── remotes
+│       │   └── origin
+│       └── tags
+├── app
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── db.cpython-312.pyc
+│   │   ├── db_utils.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── routes.cpython-312.pyc
+│   ├── db.py
+│   ├── from app import db.py
+│   ├── models.py
+│   ├── relatorios
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── pdf_report.cpython-312.pyc
+│   │   │   └── relatorio.cpython-312.pyc
+│   │   ├── pdf_report.py
+│   │   ├── relatorio.py
+│   │   └── relatorio_os_cliente.py
+│   ├── requirements.txt
+│   ├── routes.py
+│   ├── static
+│   │   ├── css
+│   │   └── js
+│   ├── templates
+│   │   ├── alterar_os.html
+│   │   ├── base.html
+│   │   ├── base_login.html
+│   │   ├── cadastro_usuario.html
+│   │   ├── consultar_os.html
+│   │   ├── consultar_usuarios.html
+│   │   ├── dashboard.html
+│   │   ├── editar_usuario.html
+│   │   ├── login.html
+│   │   ├── nova_os.html
+│   │   ├── relatorio_os_cliente.html
+│   │   └── relatorio_os_cliente_pdf.html
+│   └── util
+│       └── utils.py
+├── banco
+│   └── solicitacoes.db
+├── instance
+├── package_install
+│   ├── gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe
+│   └── wkhtmltox-0.12.6-1.msvc2015-win64.exe
+├── readme.txt
+├── requirements.txt
+├── run.py
+└── venv
+    ├── Include
+    │   └── site
+    │       └── python3.12
+    ├── Lib
+    │   └── site-packages
+    │       ├── Flask_Login-0.6.3.dist-info
+    │       ├── MarkupSafe-3.0.2.dist-info
+    │       ├── PIL
+    │       ├── __pycache__
+    │       ├── blinker
+    │       ├── blinker-1.9.0.dist-info
+    │       ├── charset_normalizer
+    │       ├── charset_normalizer-3.4.2.dist-info
+    │       ├── click
+    │       ├── click-8.2.1.dist-info
+    │       ├── colorama
+    │       ├── colorama-0.4.6.dist-info
+    │       ├── flask
+    │       ├── flask-3.1.1.dist-info
+    │       ├── flask_login
+    │       ├── flask_sqlalchemy
+    │       ├── flask_sqlalchemy-3.1.1.dist-info
+    │       ├── greenlet
+    │       ├── greenlet-3.2.3.dist-info
+    │       ├── itsdangerous
+    │       ├── itsdangerous-2.2.0.dist-info
+    │       ├── jinja2
+    │       ├── jinja2-3.1.6.dist-info
+    │       ├── markupsafe
+    │       ├── pillow-11.2.1.dist-info
+    │       ├── pip
+    │       ├── pip-24.0.dist-info
+    │       ├── reportlab
+    │       ├── reportlab-4.4.2.dist-info
+    │       ├── sqlalchemy
+    │       ├── sqlalchemy-2.0.41.dist-info
+    │       ├── typing_extensions-4.14.0.dist-info
+    │       ├── typing_extensions.py
+    │       ├── werkzeug
+    │       └── werkzeug-3.1.3.dist-info
+    ├── Scripts
+    │   ├── Activate.ps1
+    │   ├── activate
+    │   ├── activate.bat
+    │   ├── deactivate.bat
+    │   ├── flask.exe
+    │   ├── normalizer.exe
+    │   ├── pip.exe
+    │   ├── pip3.12.exe
+    │   ├── pip3.exe
+    │   ├── python.exe
+    │   └── pythonw.exe
+    └── pyvenv.cfg

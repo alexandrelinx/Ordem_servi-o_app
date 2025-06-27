@@ -3,24 +3,58 @@ from app.db import (
     criar_tabela, obter_os, inserir_os, carregar_nomes_clientes,
     carregar_nomes_solicitantes, carregar_nomes_equipamentos,
     carregar_nomes_setores, carregar_status_atendimentos,
-    obter_os_por_id, atualizar_os, excluir_os, somar_valores
+    obter_os_por_id, atualizar_os, excluir_os, somar_valores, obter_relatorio_os_por_cliente_com_totais, obter_relatorio_os_por_cliente 
 )
 from app.relatorios.relatorio import gerar_relatorio_pdf
-from app.db import obter_relatorio_os_por_cliente 
-from flask import request, render_template
-import io
+from io import BytesIO
 from datetime import datetime
 from collections import defaultdict
 from datetime import datetime
-from app import db 
-from flask import request, render_template, make_response
-from weasyprint import HTML
-from flask import request, render_template, Blueprint
-import pdfkit
-from flask import Response, render_template, request
-
+from app import db
+from flask import Flask,send_file, abort, Blueprint, render_template, request, redirect, url_for, flash, send_file, Response,  make_response
+from app.relatorios.pdf_report import gerar_relatorio_os_por_cliente_pdf, gerar_relatorio_os_detalhado_pdf
+from werkzeug.security import generate_password_hash ,check_password_hash
+from app.models import User
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
+from flask import flash, redirect, url_for
+from app import login_manager 
+from flask import session
+from flask_login import current_user
 
 main = Blueprint('main', __name__)
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        usuario = request.form.get('usuario').strip().lower()
+        senha = request.form.get('senha')
+        user = User.query.filter_by(usuario=usuario).first()
+        if user and check_password_hash(user.senha_hash, senha):  # ou user.check_password(senha) se tiver método no model
+            login_user(user)
+            flash('Login bem-sucedido!', 'success')
+            print("Usuário encontrado:", user.usuario)
+            print("Senha correta?", check_password_hash(user.senha_hash, senha))
+            return redirect(url_for('main.dashboard_completo'))
+        else:
+            flash('Credenciais inválidas.', 'danger')
+            print("Usuário não encontrado:", usuario)
+    return render_template('login.html')
+
+
+@main.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Você saiu do sistema.', 'info')
+    return redirect(url_for('main.logout'))
+
+
+@main.route('/dashboard')
+@login_required
+def dashboard():
+    return f"Olá, {current_user.usuario}! Você está logado." 
+
 
 # app/__init__.py
 from flask import Flask
@@ -32,7 +66,7 @@ def create_app():
     from .routes import main
     app.register_blueprint(main)
 
-    from .db import criar_tabela
+    from app.db import criar_tabela
 
     @app.before_first_request
     def inicializar_banco():
@@ -41,11 +75,12 @@ def create_app():
     return app
 
 @main.route('/')
-def dashboard():
+def dashboard_completo():
+   
     ordens = obter_os()
     print(ordens)
     total_valor = somar_valores()
-    return render_template('dashboard.html', ordens=ordens, total=total_valor)
+    return render_template('dashboard.html', ordens=ordens, total=total_valor,usuario=current_user.usuario)
 
 @main.route('/nova-os', methods=['GET', 'POST'])
 def nova_os():
@@ -173,14 +208,13 @@ def relatorio_os(os_id):
     os_registro = obter_os_por_id(os_id)
     if not os_registro:
         flash("Ordem de Serviço não encontrada para gerar relatório.", "danger")
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.consultar_os'))
 
     buffer = gerar_relatorio_pdf(os_registro)
     return send_file(buffer,
                      as_attachment=True,
                      download_name=f'OS_{os_id}.pdf',
                      mimetype='application/pdf')
-
 
 @main.route('/consultar-os')
 def consultar_os():
@@ -200,7 +234,7 @@ def relatorio_os_cliente():
     cliente_selecionado = request.args.get('cliente', '').strip()
 
     # Supondo que 'db' seja seu módulo de acesso ao banco com essa função
-    dados, totais = db.obter_relatorio_os_por_cliente_com_totais()
+    dados, totais =obter_relatorio_os_por_cliente_com_totais()
 
     if cliente_selecionado:
         dados = {cliente_selecionado: dados.get(cliente_selecionado, {})}
@@ -211,7 +245,7 @@ def relatorio_os_cliente():
 
         # Só pra garantir, cliente_selecionado fica vazio para o template saber que é "todos"
         cliente_selecionado = ''
-    clientes = db.carregar_nomes_clientes()
+    clientes = carregar_nomes_clientes()
 
     return render_template('relatorio_os_cliente.html',
                            dados=dados,
@@ -221,26 +255,119 @@ def relatorio_os_cliente():
 
 
 
-import pdfkit
-from flask import Response, render_template, request
 
 @main.route('/relatorio-os-cliente/pdf')
 def relatorio_os_cliente_pdf():
     cliente_selecionado = request.args.get('cliente', '').strip()
-    dados, totais = db.obter_relatorio_os_por_cliente_com_totais()
+    dados, totais = obter_relatorio_os_por_cliente_com_totais()
 
     if cliente_selecionado:
         dados = {cliente_selecionado: dados.get(cliente_selecionado, {})}
         totais = {cliente_selecionado: totais.get(cliente_selecionado, {})}
 
-    html = render_template('relatorio_os_cliente_pdf.html',
-                           dados=dados,
-                           totais=totais,
-                           cliente_selecionado=cliente_selecionado)
-    
-    config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')  # Ajuste o caminho
-    pdf = pdfkit.from_string(html, False, configuration=config)
+    buffer = gerar_relatorio_os_por_cliente_pdf(dados, totais)
 
-    response = Response(pdf, mimetype='application/pdf')
-    response.headers['Content-Disposition'] = 'inline; filename=relatorio_os_cliente.pdf'
-    return response
+    return send_file(buffer,
+                     as_attachment=True,
+                     download_name='relatorio_os_cliente.pdf',
+                     mimetype='application/pdf')
+
+
+
+
+
+
+#Rotas para login e logout
+
+# # @main.route('/cadastro/usuarios', methods=['GET', 'POST'])
+# # def cadastro_usuario():
+    
+# #     if request.method == 'POST':
+# #         usuario = request.form.get('usuario', '').strip()
+# #         senha = request.form.get('senha', '').strip()
+
+# #         if not usuario or not senha:
+# #             flash("Usuário e senha são obrigatórios.", "warning")
+# #             return redirect(request.url)
+
+# #         senha_hash = generate_password_hash(senha)
+
+# #         conn = get_db_connection()
+
+# #         existente = conn.execute("SELECT 1 FROM usuario WHERE usuario = ?", (usuario,)).fetchone()
+# #         if existente:
+# #             flash("Usuário já existe.", "danger")
+# #             conn.close()
+# #             return redirect(request.url)
+
+# #         conn.execute("INSERT INTO usuario (usuario, senha_hash) VALUES (?, ?)", (usuario, senha_hash))
+# #         conn.commit()
+# #         conn.close()
+
+# #         flash("Usuário cadastrado com sucesso!", "success")
+# #         return redirect(url_for('login'))  # ou outra página
+# #     print("Renderizando cadastro_usuario.html")
+# #     return render_template('cadastro_usuario.html')
+
+# # @main.route('/usuarios')
+# # def consultar_usuario():
+# #     conn = get_db_connection()
+# #     usuarios = conn.execute("SELECT id, usuario FROM usuario ORDER BY usuario ASC").fetchall()
+# #     conn.close()
+# #     return render_template('consultar_usuarios.html', usuarios=usuarios)
+
+# # @main.route('/usuarios', methods=['GET'])
+# # def listar_usuarios():
+# #     conn = get_db_connection()
+# #     usuarios = conn.execute("SELECT id, usuario FROM usuario ORDER BY usuario ASC").fetchall()
+# #     conn.close()
+# #     return render_template('listar_usuarios.html', usuarios=usuarios)
+
+# # @main.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
+# # def editar_usuario(id):
+# #     conn = get_db_connection()
+
+# #     if request.method == 'POST':
+# #         usuario = request.form.get('usuario', '').strip()
+# #         senha = request.form.get('senha', '').strip()
+
+# #         if not usuario:
+# #             flash("O nome de usuário é obrigatório.", "warning")
+# #             return redirect(request.url)
+
+# #         # Atualiza com ou sem nova senha
+# #         if senha:
+# #             senha_hash = generate_password_hash(senha)
+# #             conn.execute(
+# #                 "UPDATE usuario SET usuario = ?, senha_hash = ? WHERE id = ?",
+# #                 (usuario, senha_hash, id)
+# #             )
+# #         else:
+# #             conn.execute(
+# #                 "UPDATE usuario SET usuario = ? WHERE id = ?",
+# #                 (usuario, id)
+# #             )
+
+# #         conn.commit()
+# #         conn.close()
+# #         flash("Usuário atualizado com sucesso!", "success")
+# #         return redirect(url_for('listar_usuarios'))
+
+# #     # GET: carregar dados do usuário
+# #     usuario = conn.execute("SELECT * FROM usuario WHERE id = ?", (id,)).fetchone()
+# #     conn.close()
+
+# #     if usuario is None:
+# #         flash("Usuário não encontrado.", "danger")
+# #         return redirect(url_for('listar_usuarios'))
+
+# #     return render_template('editar_usuario.html', usuario=usuario)
+
+# # @main.route('/usuarios/excluir/<int:id>', methods=['POST'])
+# # def excluir_usuario(id):
+# #     conn = get_db_connection()
+# #     conn.execute("DELETE FROM usuario WHERE id = ?", (id,))
+# #     conn.commit()
+# #     conn.close()
+# #     flash("Usuário excluído com sucesso!", "success")
+# #     return redirect(url_for('listar_usuarios'))
