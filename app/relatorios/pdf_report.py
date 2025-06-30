@@ -1,100 +1,106 @@
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.units import cm
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
-from reportlab.lib.styles import getSampleStyleSheet
-from io import BytesIO
+import os
+import platform
 from datetime import datetime
-
-styles = getSampleStyleSheet()
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.lib.units import cm
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from app.db import obter_relatorio_os_por_cliente, somar_valores
+from io import BytesIO
 
 def gerar_relatorio_os_por_cliente_pdf(dados, totais):
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4),  # alterado para landscape
-                            rightMargin=2*cm, leftMargin=2*cm,
-                            topMargin=2*cm, bottomMargin=2*cm)
-
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
     elementos = []
+    styles = getSampleStyleSheet()
+
+    titulo_style = ParagraphStyle(
+        name="TituloCentralizado",
+        parent=styles["Heading1"],
+        alignment=TA_CENTER,
+        fontSize=16,
+        spaceAfter=20
+    )
+
+    style_direita = ParagraphStyle(
+        name='DireitaNegrito',
+        parent=styles['Heading2'],
+        alignment=TA_RIGHT,
+        fontSize=12,
+        spaceBefore=20
+    )
+
+    def cabecalho(canvas, doc):
+        canvas.saveState()
+        largura, altura = landscape(A4)
+
+        logo_path = "c:/ForPoint/V3/ordem_servico/imagens/Resolvidodownload.jpg"
+        if os.path.exists(logo_path):
+            try:
+                canvas.drawImage(logo_path, 40, altura - 70, width=60, height=40, preserveAspectRatio=True)
+            except Exception:
+                pass
+
+        canvas.setFont("Helvetica-Bold", 14)
+        canvas.drawCentredString(largura / 2.0, altura - 50, "Relatório de OS por Cliente")
+        canvas.setFont("Helvetica", 10)
+        data_emissao = datetime.now().strftime("Emitido em: %d/%m/%Y %H:%M")
+        canvas.drawCentredString(largura / 2.0, altura - 65, data_emissao)
+        canvas.setFont("Helvetica", 9)
+        canvas.drawCentredString(largura / 2.0, 20, f"Página {canvas.getPageNumber()}")
+        canvas.restoreState()
+
+    total_geral = 0.0
+    elementos.append(Spacer(1, 12))
 
     for cliente, meses in dados.items():
-        elementos.append(Paragraph(f"Cliente: <b>{cliente}</b>", styles['Heading2']))
-        elementos.append(Spacer(1, 12))
-
+        elementos.append(Paragraph(f"<b>Cliente: {cliente}</b>", styles['Heading2']))
         for mes, os_list in meses.items():
-            elementos.append(Paragraph(f"Mês: <b>{mes}</b>", styles['Heading3']))
-            elementos.append(Spacer(1, 6))
+            elementos.append(Paragraph(f"<b>Mês: {mes}</b>", styles['Heading3']))
 
-            data = [["Solicitante", "Data Solicitação", "Problema", "Equipamento", "Data Conclusão", "Valor Serviço "]]
+            tabela_data = [["Solicitante", "Data Solicitação", "Problema", "Equipamento", "Data Conclusão", "Valor (R$)"]]
+            subtotal_mes = 0.0
 
-            for os_item in os_list:
-                data.append([
-                    os_item.get("solicitante", ""),
-                    os_item.get("data_solicitacao", ""),
-                    os_item.get("problema", ""),
-                    os_item.get("equipamento", ""),
-                    os_item.get("data_conclusao", ""),
-                    f"{os_item.get('valor_servico', 0.0):.2f}",
-                ])
+            for ordem in os_list:
+                valor_servico = ordem.get("valor_servico") or 0.0
+                linha = [
+                    ordem.get("solicitante", ""),
+                    ordem.get("data_solicitacao", ""),
+                    ordem.get("problema", ""),
+                    ordem.get("equipamento", ""),
+                    ordem.get("data_conclusao", ""),
+                    f'{valor_servico:.2f}'
+                ]
+                subtotal_mes += valor_servico
+                tabela_data.append(linha)
 
-            total_mes = totais[cliente][mes]
-            data.append(["", "", "", "", "Total:", f"{total_mes:.2f}"])
-
-            tabela = Table(data, colWidths=[3*cm, 3*cm, 12*cm, 3*cm, 3*cm, 2.5*cm])
+            tabela = Table(tabela_data, colWidths=[3*cm, 3*cm, 12*cm, 3*cm, 3*cm, 2.5*cm])
             tabela.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.lightblue),
-                ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-                ('ALIGN',(0,0),(-1,-1),'LEFT'),
-                ('ALIGN', (-1, 1), (-1, -1), 'RIGHT'),  # Alinha a coluna "Valor Serviço (R$)" à direita
-                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-                ('BOTTOMPADDING', (0,0), (-1,0), 6),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
-                ('BACKGROUND', (0,-1), (-1,-1), colors.lightgrey),
-                ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
-                ('ALIGN', (-2,-1), (-1,-1), 'RIGHT'),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('ALIGN', (5, 1), (5, -1), 'RIGHT'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ]))
 
             elementos.append(tabela)
-            elementos.append(Spacer(1, 20))
+            elementos.append(Paragraph(f"<b>Subtotal {mes}: R$ {subtotal_mes:.2f}</b>", styles['Normal']))
+            elementos.append(Spacer(1, 0.3 * cm))
+            total_geral += subtotal_mes
 
-        elementos.append(PageBreak())
+    elementos.append(Spacer(1, 0.5 * cm))
 
-    doc.build(elementos)
-    buffer.seek(0)
-    return buffer
+    # Totais finais (total de todas as OS de todos os clientes/meses)
+    valor_total_absoluto = sum(
+        sum(mes_valores.values()) for mes_valores in totais.values()
+    )
 
+    elementos.append(Paragraph(f"<b>Total Deste Relatório: R$ {total_geral:.2f}</b>", style_direita))
+    elementos.append(Paragraph(f"<b>Total Geral de TODAS as OS: R$ {valor_total_absoluto:.2f}</b>", style_direita))
 
-def gerar_relatorio_os_detalhado_pdf(os_detalhes):
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4),  # também alterado para landscape
-                            rightMargin=2*cm, leftMargin=2*cm,
-                            topMargin=2*cm, bottomMargin=2*cm)
+    doc.build(elementos, onFirstPage=cabecalho, onLaterPages=cabecalho)
 
-    elementos = []
-    estilos = getSampleStyleSheet()
-
-    elementos.append(Paragraph(f"Relatório Detalhado da OS ID: {os_detalhes.get('id', '')}", estilos['Heading1']))
-    elementos.append(Spacer(1, 12))
-
-    campos = [
-        ("Cliente", os_detalhes.get("cliente", "")),
-        ("Solicitante", os_detalhes.get("solicitante", "")),
-        ("Equipamento", os_detalhes.get("equipamento", "")),
-        ("Setor", os_detalhes.get("setor", "")),
-        ("Status", os_detalhes.get("status", "")),
-        ("Data Solicitação", os_detalhes.get("data_solicitacao", "")),
-        ("Hora Solicitação", os_detalhes.get("hora_solicitacao", "")),
-        ("Problema", os_detalhes.get("problema", "")),
-        ("Análise do Problema", os_detalhes.get("analise_problema", "")),
-        ("Solução", os_detalhes.get("solucao", "")),
-        ("Valor do Serviço (R$)", f"{os_detalhes.get('valor_servico', 0.0):.2f}"),
-        ("Data Conclusão", os_detalhes.get("data_conclusao", "")),
-        ("Hora Conclusão", os_detalhes.get("hora_conclusao", "")),
-    ]
-
-    for label, valor in campos:
-        elementos.append(Paragraph(f"<b>{label}:</b> {valor}", estilos['Normal']))
-        elementos.append(Spacer(1, 8))
-
-    doc.build(elementos)
     buffer.seek(0)
     return buffer

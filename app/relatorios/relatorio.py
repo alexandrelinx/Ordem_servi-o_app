@@ -29,12 +29,12 @@ def gerar_relatorio_pdf(dados_os):
     style_bold = ParagraphStyle('BoldStyle', parent=style_normal, fontName='Helvetica-Bold')
 
     # Logo (ajuste o caminho conforme sua estrutura)
-    logo_path = os.path.join(os.getcwd(), "imagens", "Resolvidodownload.jpg")
+    logo_path = os.path.join(os.getcwd(),"app", "imagens", "Resolvidodownload.jpg")
     if os.path.exists(logo_path):
         logo = Image(logo_path, width=4*cm, height=2.5*cm)
     else:
         logo = Paragraph("Logo não encontrada", style_normal)
-
+    print(logo_path)
     empresa_info = [
         [Paragraph("<b>AMOS Serviços de Tecnologia</b>", style_title)],
         [Paragraph("Endereço: AV Sapucaia, 50 - Ibura UR2 - Recife/PE - CEP 51340-720", style_normal)],

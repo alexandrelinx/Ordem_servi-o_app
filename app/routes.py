@@ -12,7 +12,9 @@ from collections import defaultdict
 from datetime import datetime
 from app import db
 from flask import Flask,send_file, abort, Blueprint, render_template, request, redirect, url_for, flash, send_file, Response,  make_response
-from app.relatorios.pdf_report import gerar_relatorio_os_por_cliente_pdf, gerar_relatorio_os_detalhado_pdf
+from app.relatorios.pdf_report import gerar_relatorio_os_por_cliente_pdf
+#from app.relatorios.pdf_report import gerar_relatorio_geral_por_cliente_pdf, gerar_relatorio_os_detalhado_pdf
+
 from werkzeug.security import generate_password_hash ,check_password_hash
 from app.models import User
 from flask import Blueprint, render_template, request, redirect, url_for, flash
@@ -236,6 +238,12 @@ def relatorio_os_cliente():
     # Supondo que 'db' seja seu módulo de acesso ao banco com essa função
     dados, totais =obter_relatorio_os_por_cliente_com_totais()
 
+
+        # Cálculo do total geral de todos os meses de todos os clientes
+    total_geral = sum(
+        sum(mes_valores.values()) for mes_valores in totais.values()
+    )
+
     if cliente_selecionado:
         dados = {cliente_selecionado: dados.get(cliente_selecionado, {})}
         totais = {cliente_selecionado: totais.get(cliente_selecionado, {})}
@@ -251,7 +259,8 @@ def relatorio_os_cliente():
                            dados=dados,
                            totais=totais,
                            clientes=clientes,
-                           cliente_selecionado=cliente_selecionado)
+                           cliente_selecionado=cliente_selecionado,
+                           total_geral=total_geral )
 
 
 
@@ -265,7 +274,7 @@ def relatorio_os_cliente_pdf():
         dados = {cliente_selecionado: dados.get(cliente_selecionado, {})}
         totais = {cliente_selecionado: totais.get(cliente_selecionado, {})}
 
-    buffer = gerar_relatorio_os_por_cliente_pdf(dados, totais)
+    buffer = gerar_relatorio_os_por_cliente_pdf (dados, totais)
 
     return send_file(buffer,
                      as_attachment=True,
