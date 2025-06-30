@@ -6,34 +6,35 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.lib.units import cm
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from app.db import obter_relatorio_os_por_cliente, somar_valores
 
-from app.db import obter_relatorio_os_por_cliente
 
 def gerar_relatorio_geral_por_cliente_pdf(nome_arquivo="relatorio_os_por_cliente.pdf"):
     dados = obter_relatorio_os_por_cliente()
 
-    # Cria a pasta "relatorios" se não existir
     pasta_relatorios = os.path.join(os.getcwd(), "relatorios")
     os.makedirs(pasta_relatorios, exist_ok=True)
-
-    # Define o caminho completo do arquivo
     caminho_arquivo = os.path.join(pasta_relatorios, nome_arquivo)
 
-    # Gera o PDF em modo paisagem
     doc = SimpleDocTemplate(caminho_arquivo, pagesize=landscape(A4))
-    largura, altura = landscape(A4)
-
     elementos = []
     styles = getSampleStyleSheet()
 
-    # Estilo centralizado para o título
     titulo_style = ParagraphStyle(
         name="TituloCentralizado",
         parent=styles["Heading1"],
         alignment=TA_CENTER,
         fontSize=16,
         spaceAfter=20
+    )
+
+    style_direita = ParagraphStyle(
+        name='DireitaNegrito',
+        parent=styles['Heading2'],
+        alignment=TA_RIGHT,
+        fontSize=12,
+        spaceBefore=20
     )
 
     def cabecalho(canvas, doc):
@@ -49,25 +50,19 @@ def gerar_relatorio_geral_por_cliente_pdf(nome_arquivo="relatorio_os_por_cliente
 
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawCentredString(largura / 2.0, altura - 50, "Relatório de OS por Cliente")
-
         canvas.setFont("Helvetica", 10)
         data_emissao = datetime.now().strftime("Emitido em: %d/%m/%Y %H:%M")
         canvas.drawCentredString(largura / 2.0, altura - 65, data_emissao)
-
         canvas.setFont("Helvetica", 9)
-        numero_pagina = f"Página {canvas.getPageNumber()}"
-        canvas.drawCentredString(largura / 2.0, 20, numero_pagina)
-
+        canvas.drawCentredString(largura / 2.0, 20, f"Página {canvas.getPageNumber()}")
         canvas.restoreState()
 
     elementos.append(Spacer(1, 12))
 
     total_geral = 0.0
 
-    # Itera por cliente
     for cliente, meses in dados.items():
         elementos.append(Paragraph(f"<b>Cliente: {cliente}</b>", styles['Heading2']))
-        # Itera por mês dentro do cliente
         for mes, os_list in meses.items():
             elementos.append(Paragraph(f"<b>Mês: {mes}</b>", styles['Heading3']))
 
@@ -103,11 +98,16 @@ def gerar_relatorio_geral_por_cliente_pdf(nome_arquivo="relatorio_os_por_cliente
 
         elementos.append(Spacer(1, 0.5 * cm))
 
-    elementos.append(Paragraph(f"<b>Total Geral de OS: R$ {total_geral:.2f}</b>", styles['Heading2']))
+    # Totais finais
+    valor_total_absoluto = somar_valores()
+    elementos.append(Spacer(1, 0.5 * cm))
+    elementos.append(Paragraph(f"<b>Total Deste Relatório: R$ {total_geral:.2f}</b>", style_direita))
+    elementos.append(Paragraph(f"<b>Total Geral de TODAS as OS: R$ {valor_total_absoluto:.2f}</b>", style_direita))
+
+    print("Total absoluto:", valor_total_absoluto)
 
     doc.build(elementos, onFirstPage=cabecalho, onLaterPages=cabecalho)
 
-    # Abre o PDF automaticamente, conforme o sistema operacional
     if platform.system() == "Windows":
         os.startfile(caminho_arquivo)
     elif platform.system() == "Darwin":

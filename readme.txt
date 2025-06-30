@@ -26,3 +26,4 @@ aplicar na variável de ambiente  C:\Program Files\GTK3-Runtime Win64\bin
       pip install flask flask-login  
       pip install reportlab                                                      
      python -m venv venv     
+      python -m venv venv     

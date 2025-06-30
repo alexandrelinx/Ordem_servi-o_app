@@ -408,9 +408,10 @@ def obter_relatorio_os_por_cliente_com_totais(cliente=None):
         cliente_nome = row["cliente"] or "Sem Cliente"
         data_solicitacao = row["data_solicitacao"]
         try:
-            mes = datetime.strptime(data_solicitacao, "%Y-%m-%d").strftime("%Y-%m")
-        except Exception:
-            mes = "Data Inválida"
+            mes = datetime.strptime(data_solicitacao, "%d/%m/%Y").strftime("%Y/%m")
+        except Exception as e:
+         print(f"Data inválida: {data_solicitacao} - {e}")
+         mes = "Data Inválida"
 
         os_info = {
             "solicitante": row["solicitante"] or "",

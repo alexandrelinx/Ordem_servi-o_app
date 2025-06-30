@@ -29,6 +29,8 @@
     <h4 class="mt-4">{{ cliente }}</h4>
     {% for mes, os_list in meses.items() %}
       <h5 class="text-muted">{{ mes }}</h5>
+      
+
       <table class="table table-sm table-bordered">
         <thead class="table-light">
           <tr>
@@ -56,11 +58,16 @@
             <td><strong>R$ {{ "%.2f"|format(totais.get(cliente, {}).get(mes, 0.0)) }}</strong></td>
           </tr>
         </tbody>
+        
       </table>
+      
     {% endfor %}
   {% endfor %}
 {% else %}
   <p>Nenhuma Ordem de Serviço encontrada para exibir.</p>
 {% endif %}
+<div style="position: fixed; bottom: 20px; right: 20px; background-color: white; padding: 10px; border: 1px solid #ccc; z-index: 1000;">
+  <strong>Total Geral: R$ {{ "%.2f"|format(total_geral) }}</strong>
+</div>
 
 {% endblock %}
