@@ -7,6 +7,10 @@ from app.db import criar_tabela  # função sqlite3 pura para tabela OS
 db = SQLAlchemy()
 login_manager = LoginManager()
 
+
+login_manager = LoginManager()
+login_manager.login_view = 'main.login'
+
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'ordem_servico'
@@ -20,6 +24,7 @@ def create_app():
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+   
     db.init_app(app)
     login_manager.init_app(app)
 
