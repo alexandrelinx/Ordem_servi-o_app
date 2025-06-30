@@ -13,8 +13,6 @@ from datetime import datetime
 from app import db
 from flask import Flask,send_file, abort, Blueprint, render_template, request, redirect, url_for, flash, send_file, Response,  make_response
 from app.relatorios.pdf_report import gerar_relatorio_os_por_cliente_pdf
-#from app.relatorios.pdf_report import gerar_relatorio_geral_por_cliente_pdf, gerar_relatorio_os_detalhado_pdf
-
 from werkzeug.security import generate_password_hash ,check_password_hash
 from app.models import User
 from flask import Blueprint, render_template, request, redirect, url_for, flash
@@ -23,8 +21,15 @@ from flask import flash, redirect, url_for
 from app import login_manager 
 from flask import session
 from flask_login import current_user
-
+from flask_login import current_user, login_required
+from flask_login import LoginManager
 main = Blueprint('main', __name__)
+
+
+@main.route('/')
+def raiz():
+    # Redireciona para /login
+    return redirect(url_for('main.login'))
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -49,7 +54,7 @@ def login():
 def logout():
     logout_user()
     flash('Você saiu do sistema.', 'info')
-    return redirect(url_for('main.logout'))
+    return redirect(url_for('main.login'))
 
 
 @main.route('/dashboard')
@@ -82,7 +87,16 @@ def dashboard_completo():
     ordens = obter_os()
     print(ordens)
     total_valor = somar_valores()
-    return render_template('dashboard.html', ordens=ordens, total=total_valor,usuario=current_user.usuario)
+    usuario = current_user.usuario if current_user.is_authenticated else None
+    return render_template('dashboard.html', ordens=ordens, total=total_valor,usuario=usuario)
+
+#login_manager = LoginManager()
+#login_manager.login_view = 'main.login'  # ou o nome correto da rota
+#login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 @main.route('/nova-os', methods=['GET', 'POST'])
 def nova_os():

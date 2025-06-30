@@ -2,7 +2,18 @@
 {% block title %}Relatório por Cliente{% endblock %}
 
 {% block content %}
+
+<style>
+  /* Controle de largura das colunas da tabela */
+  .col-solicitante { width: 10% }
+  .col-data { width: 10%; }
+  .col-equipamento { width: 15%; }
+  .col-problema { width: 28%; }
+  .col-valor { width: 10%;text-align: right; }
+</style>
+
 <h2>Relatório de Ordens de Serviço por Cliente</h2>
+
 <form method="get" class="row g-3 align-items-end mb-4">
   <div class="col-auto">
     <label for="cliente" class="form-label">Filtrar por Cliente:</label>
@@ -29,43 +40,60 @@
     <h4 class="mt-4">{{ cliente }}</h4>
     {% for mes, os_list in meses.items() %}
       <h5 class="text-muted">{{ mes }}</h5>
-      
 
       <table class="table table-sm table-bordered">
         <thead class="table-light">
           <tr>
-            <th>Solicitante</th>
-            <th>Data Solicitação</th>
-            <th>Equipamento</th>
-            <th>Problema</th>
-            <th>Data Conclusão</th>
-            <th>Valor</th>
+            <th class="col-solicitante">Solicitante</th>
+            <th class="col-data">Data Solicitação</th>
+            <th class="col-equipamento">Equipamento</th>
+            <th class="col-problema">Problema</th>
+            <th class="col-data">Data Conclusão</th>
+            <th class="col-valor">Valor</th>
           </tr>
         </thead>
         <tbody>
           {% for os in os_list %}
           <tr>
-            <td>{{ os.solicitante }}</td>
-            <td>{{ os.data_solicitacao }}</td>
-            <td>{{ os.equipamento }}</td>
-            <td>{{ os.problema }}</td>
-            <td>{{ os.data_conclusao }}</td>
-            <td>R$ {{ "%.2f"|format(os.valor_servico) }}</td>
+            <td class="col-solicitante">{{ os.solicitante }}</td>
+            <td class="col-data">{{ os.data_solicitacao }}</td>
+            <td class="col-equipamento">{{ os.equipamento }}</td>
+            <td class="col-problema">{{ os.problema }}</td>
+            <td class="col-data">{{ os.data_conclusao }}</td>
+            <td class="col-valor">R$ {{ "%.2f"|format(os.valor_servico) }}</td>
           </tr>
           {% endfor %}
           <tr>
             <td colspan="5" class="text-end"><strong>Total do Mês:</strong></td>
-            <td><strong>R$ {{ "%.2f"|format(totais.get(cliente, {}).get(mes, 0.0)) }}</strong></td>
+            <td class="col-valor"><strong>R$ {{ "%.2f"|format(totais.get(cliente, {}).get(mes, 0.0)) }}</strong></td>
           </tr>
         </tbody>
-        
       </table>
-      
     {% endfor %}
+     
+ <!-- Total do cliente, após todos os meses -->
+    <table class="table table-sm table-bordered">
+      <tbody>
+        <tr>
+          <td colspan="5" class="text-end"><strong>Total do Cliente {{ cliente }}:</strong></td>
+          <td class="col-valor">
+            <strong>
+              R$ {{
+                "%.2f"|format(
+                  (totais.get(cliente) or {}).values()|sum
+                )
+              }}
+            </strong>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   {% endfor %}
 {% else %}
   <p>Nenhuma Ordem de Serviço encontrada para exibir.</p>
 {% endif %}
+
+
 <div style="position: fixed; bottom: 20px; right: 20px; background-color: white; padding: 10px; border: 1px solid #ccc; z-index: 1000;">
   <strong>Total Geral: R$ {{ "%.2f"|format(total_geral) }}</strong>
 </div>

@@ -36,7 +36,7 @@ def gerar_relatorio_os_por_cliente_pdf(dados, totais):
         canvas.saveState()
         largura, altura = landscape(A4)
 
-        logo_path = "c:/ForPoint/V3/ordem_servico/imagens/Resolvidodownload.jpg"
+        logo_path = "c:/ForPoint/V3/ordem_servico_app/app/imagens/Resolvidodownload.jpg"
         if os.path.exists(logo_path):
             try:
                 canvas.drawImage(logo_path, 40, altura - 70, width=60, height=40, preserveAspectRatio=True)
@@ -53,7 +53,12 @@ def gerar_relatorio_os_por_cliente_pdf(dados, totais):
         canvas.restoreState()
 
     total_geral = 0.0
-    elementos.append(Spacer(1, 12))
+    #elementos.append(Spacer(1, 12))
+
+    total_por_cliente = {
+       cliente: sum(mes_valores.values())
+       for cliente, mes_valores in totais.items()
+    }
 
     for cliente, meses in dados.items():
         elementos.append(Paragraph(f"<b>Cliente: {cliente}</b>", styles['Heading2']))
@@ -89,6 +94,12 @@ def gerar_relatorio_os_por_cliente_pdf(dados, totais):
             elementos.append(Paragraph(f"<b>Subtotal {mes}: R$ {subtotal_mes:.2f}</b>", styles['Normal']))
             elementos.append(Spacer(1, 0.3 * cm))
             total_geral += subtotal_mes
+
+        # <-- ADICIONE AQUI:
+        total_cliente = total_por_cliente.get(cliente, 0.0)
+        elementos.append(Paragraph(f"<b>Total do Cliente {cliente}: R$ {total_cliente:.2f}</b>", style_direita))
+        elementos.append(Spacer(1, 0.5 * cm))
+
 
     elementos.append(Spacer(1, 0.5 * cm))
 
