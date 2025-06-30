@@ -1,4 +1,3 @@
-nginx
-CopiarEditar
 Flask
 reportlab
+gunicorn
