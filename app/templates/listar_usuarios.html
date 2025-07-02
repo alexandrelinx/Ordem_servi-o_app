@@ -1,16 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Consultar Usuários{% endblock %}
+{% block title %}Listar Usuários{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h3>Consultar Usuários</h3>
-   <!-- <a href="{{ url_for('main.cadastro_usuario') }}" class="btn btn-primary mb-3">Novo Usuário</a> -->
+    <h3>Usuários Cadastrados</h3>
+    
     <table class="table table-bordered" id="tabelaUsuarios">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Usuário</th>
-                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -18,12 +17,6 @@
             <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.usuario }}</td>
-                <td>
-                    <a href="{{ url_for('main.editar_usuario', id=user.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                    <form action="{{ url_for('main.excluir_usuario', id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
-                    </form>
-                </td>
             </tr>
             {% endfor %}
         </tbody>

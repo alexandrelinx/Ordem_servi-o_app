@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastro de Usuário{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Cadastro de Usuário</h3>
+    <form method="POST" class="mt-3">
+        <div class="mb-3">
+            <label for="usuario" class="form-label">Usuário:</label>
+            <input type="text" id="usuario" name="usuario" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="senha" class="form-label">Senha:</label>
+            <input type="password" id="senha" name="senha" class="form-control" required>
+            <small class="form-text text-muted">Use ao menos 8 caracteres, com letras e números.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+    </form>
+
+    <div class="mt-3">
+        <a href="{{ url_for('main.listar_usuarios') }}" class="btn btn-link">Voltar à lista de usuários</a>
+    </div>
+</div>
+{% endblock %}

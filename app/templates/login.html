@@ -18,10 +18,14 @@
 
     <div class="d-grid gap-2 d-md-flex justify-content-center">
       <button type="submit" class="btn btn-primary">Entrar</button>
-    <!--<button type="button" class="btn btn-secondary ms-2" onclick="window.close()">Fechar</button> -->
-    </div>
     </div>
   </form>
+
+  <div class="mt-3 text-center">
+    <p>Não tem uma conta? 
+      <a href="{{ url_for('main.cadastro_usuario') }}" class="btn btn-link">Cadastre-se aqui</a>
+    </p>
+  </div>
 {% endblock %}
 
 
