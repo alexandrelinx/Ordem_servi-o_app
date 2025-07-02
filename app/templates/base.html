@@ -235,9 +235,29 @@
             </ul>
           </div>
         </li>
-      </ul>
-    </div>
-
+      
+   
+<li class="nav-item mt-3">
+  <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuAdm" role="button" aria-expanded="false" aria-controls="submenuAdm">
+    <i class="fas fa-user-cog me-2"></i><span class="text"> Adm</span>
+  </a>
+  <div class="collapse" id="submenuAdm">
+    <ul class="nav flex-column submenu">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.cadastro_usuario_menu') }}">
+          <i class="fas fa-user-plus me-2"></i><span class="text"> Cadastro de Usuário</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.consultar_usuario') }}">
+          <i class="fas fa-users me-2"></i><span class="text"> Consulta de Usuário</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</li>
+</ul>
+ </div>
     {% if current_user.is_authenticated %}
       <div class="logout-btn px-3">
         <a href="{{ url_for('main.logout') }}" class="btn btn-danger w-100">Sair</a>

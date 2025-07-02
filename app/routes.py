@@ -16,6 +16,7 @@ from app.relatorios.pdf_report import gerar_relatorio_os_por_cliente_pdf
 from werkzeug.security import generate_password_hash ,check_password_hash
 from app.models import User
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, request, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from flask import flash, redirect, url_for
 from app import login_manager 
@@ -25,6 +26,7 @@ from flask_login import current_user, login_required
 from flask_login import LoginManager
 import os
 from flask import send_from_directory, current_app
+from app.db import conectar
 main = Blueprint('main', __name__)
 
 
@@ -251,8 +253,6 @@ def consultar_os():
     return render_template('consultar_os.html', ordens=ordens, total=total_valor,
                            cliente=cliente, status=status)
 
-
-
 @main.route('/relatorio-os-cliente')
 def relatorio_os_cliente():
     cliente_selecionado = request.args.get('cliente', '').strip()
@@ -284,9 +284,6 @@ def relatorio_os_cliente():
                            cliente_selecionado=cliente_selecionado,
                            total_geral=total_geral )
 
-
-
-
 @main.route('/relatorio-os-cliente/pdf')
 def relatorio_os_cliente_pdf():
     cliente_selecionado = request.args.get('cliente', '').strip()
@@ -304,100 +301,137 @@ def relatorio_os_cliente_pdf():
                      mimetype='application/pdf')
 
 
-
-
-
 #Rotas para login e logout
 
-# # @main.route('/cadastro/usuarios', methods=['GET', 'POST'])
-# # def cadastro_usuario():
+@main.route('/cadastro/usuarios', methods=['GET', 'POST'])
+
+def cadastro_usuario():
+    if request.method == 'POST':
+        usuario = request.form['usuario']
+        senha = request.form['senha']
+
+        senha_hash = generate_password_hash(senha)
+
+        conn = conectar()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO usuario (usuario, senha_hash) VALUES (?, ?)", (usuario, senha_hash))
+            conn.commit()
+            flash('Usuário cadastrado com sucesso!', 'success')
+            return redirect(url_for('main.login'))
+        except Exception as e:
+            flash(f'Erro ao cadastrar usuário: {e}', 'danger')
+        finally:
+            conn.close()
+    return render_template('cadastro_usuario.html')
+
+@main.route('/usuarios/cadastro', methods=['GET', 'POST'])
+def cadastro_usuario_menu():
+    if request.method == 'POST':
+        usuario = request.form['usuario']
+        senha = request.form['senha']
+
+        senha_hash = generate_password_hash(senha)
+
+        conn = conectar()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO usuario (usuario, senha_hash) VALUES (?, ?)", (usuario, senha_hash))
+            conn.commit()
+            flash('Usuário cadastrado com sucesso!', 'success')
+            return redirect(url_for('main.listar_usuarios'))
+        except Exception as e:
+            flash(f'Erro ao cadastrar usuário: {e}', 'danger')
+        finally:
+            conn.close()
+
+    return render_template('cadastro_usuario_menu.html')  # Template diferente, baseado em 'base.html'
+
+
+            
+
     
-# #     if request.method == 'POST':
-# #         usuario = request.form.get('usuario', '').strip()
-# #         senha = request.form.get('senha', '').strip()
+@main.route('/usuarios')
+def consultar_usuario():
+    conn = conectar()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, usuario FROM usuario ORDER BY usuario ASC")
+        usuarios = cursor.fetchall()
+    finally:
+        conn.close()
+    return render_template('consultar_usuarios.html', usuarios=usuarios)
 
-# #         if not usuario or not senha:
-# #             flash("Usuário e senha são obrigatórios.", "warning")
-# #             return redirect(request.url)
 
-# #         senha_hash = generate_password_hash(senha)
+@main.route('/usuarios/listar')
+def listar_usuarios():
+    conn = conectar()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, usuario FROM usuario ORDER BY usuario ASC")
+        usuarios = cursor.fetchall()
+    finally:
+        conn.close()
+    return render_template('listar_usuarios.html', usuarios=usuarios)
 
-# #         conn = get_db_connection()
 
-# #         existente = conn.execute("SELECT 1 FROM usuario WHERE usuario = ?", (usuario,)).fetchone()
-# #         if existente:
-# #             flash("Usuário já existe.", "danger")
-# #             conn.close()
-# #             return redirect(request.url)
+@main.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
+def editar_usuario(id):
+    conn = conectar()
+    cursor = conn.cursor()
 
-# #         conn.execute("INSERT INTO usuario (usuario, senha_hash) VALUES (?, ?)", (usuario, senha_hash))
-# #         conn.commit()
-# #         conn.close()
+    if request.method == 'POST':
+        usuario = request.form.get('usuario', '').strip()
+        senha = request.form.get('senha', '').strip()
 
-# #         flash("Usuário cadastrado com sucesso!", "success")
-# #         return redirect(url_for('login'))  # ou outra página
-# #     print("Renderizando cadastro_usuario.html")
-# #     return render_template('cadastro_usuario.html')
+        if not usuario:
+            flash("O nome de usuário é obrigatório.", "warning")
+            return redirect(request.url)
 
-# # @main.route('/usuarios')
-# # def consultar_usuario():
-# #     conn = get_db_connection()
-# #     usuarios = conn.execute("SELECT id, usuario FROM usuario ORDER BY usuario ASC").fetchall()
-# #     conn.close()
-# #     return render_template('consultar_usuarios.html', usuarios=usuarios)
+        try:
+            if senha:
+                senha_hash = generate_password_hash(senha)
+                cursor.execute(
+                    "UPDATE usuario SET usuario = ?, senha_hash = ? WHERE id = ?",
+                    (usuario, senha_hash, id)
+                )
+            else:
+                cursor.execute(
+                    "UPDATE usuario SET usuario = ? WHERE id = ?",
+                    (usuario, id)
+                )
+            conn.commit()
+            flash("Usuário atualizado com sucesso!", "success")
+            return redirect(url_for('main.listar_usuarios'))
+        except Exception as e:
+            flash(f"Erro ao atualizar usuário: {e}", "danger")
+        finally:
+            conn.close()
 
-# # @main.route('/usuarios', methods=['GET'])
-# # def listar_usuarios():
-# #     conn = get_db_connection()
-# #     usuarios = conn.execute("SELECT id, usuario FROM usuario ORDER BY usuario ASC").fetchall()
-# #     conn.close()
-# #     return render_template('listar_usuarios.html', usuarios=usuarios)
+    # GET: carregar dados do usuário
+    try:
+        cursor.execute("SELECT * FROM usuario WHERE id = ?", (id,))
+        usuario = cursor.fetchone()
+    finally:
+        conn.close()
 
-# # @main.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
-# # def editar_usuario(id):
-# #     conn = get_db_connection()
+    if usuario is None:
+        flash("Usuário não encontrado.", "danger")
+        return redirect(url_for('main.listar_usuarios'))
 
-# #     if request.method == 'POST':
-# #         usuario = request.form.get('usuario', '').strip()
-# #         senha = request.form.get('senha', '').strip()
+    return render_template('editar_usuario.html', usuario=usuario)
 
-# #         if not usuario:
-# #             flash("O nome de usuário é obrigatório.", "warning")
-# #             return redirect(request.url)
 
-# #         # Atualiza com ou sem nova senha
-# #         if senha:
-# #             senha_hash = generate_password_hash(senha)
-# #             conn.execute(
-# #                 "UPDATE usuario SET usuario = ?, senha_hash = ? WHERE id = ?",
-# #                 (usuario, senha_hash, id)
-# #             )
-# #         else:
-# #             conn.execute(
-# #                 "UPDATE usuario SET usuario = ? WHERE id = ?",
-# #                 (usuario, id)
-# #             )
-
-# #         conn.commit()
-# #         conn.close()
-# #         flash("Usuário atualizado com sucesso!", "success")
-# #         return redirect(url_for('listar_usuarios'))
-
-# #     # GET: carregar dados do usuário
-# #     usuario = conn.execute("SELECT * FROM usuario WHERE id = ?", (id,)).fetchone()
-# #     conn.close()
-
-# #     if usuario is None:
-# #         flash("Usuário não encontrado.", "danger")
-# #         return redirect(url_for('listar_usuarios'))
-
-# #     return render_template('editar_usuario.html', usuario=usuario)
-
-# # @main.route('/usuarios/excluir/<int:id>', methods=['POST'])
-# # def excluir_usuario(id):
-# #     conn = get_db_connection()
-# #     conn.execute("DELETE FROM usuario WHERE id = ?", (id,))
-# #     conn.commit()
-# #     conn.close()
-# #     flash("Usuário excluído com sucesso!", "success")
-# #     return redirect(url_for('listar_usuarios'))
+@main.route('/usuarios/excluir/<int:id>', methods=['POST'])
+def excluir_usuario(id):
+    conn = conectar()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM usuario WHERE id = ?", (id,))
+        conn.commit()
+        flash("Usuário excluído com sucesso!", "success")
+    except Exception as e:
+        flash(f"Erro ao excluir usuário: {e}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for('main.listar_usuarios'))
