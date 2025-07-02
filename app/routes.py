@@ -23,7 +23,15 @@ from flask import session
 from flask_login import current_user
 from flask_login import current_user, login_required
 from flask_login import LoginManager
+import os
+from flask import send_from_directory, current_app
 main = Blueprint('main', __name__)
+
+
+@main.route('/imagens/<path:filename>')
+def imagens(filename):
+    diretorio_imagens = os.path.join(current_app.root_path, 'imagens')
+    return send_from_directory(diretorio_imagens, filename)
 
 
 @main.route('/')
@@ -81,7 +89,7 @@ def create_app():
 
     return app
 
-@main.route('/')
+@main.route('/dashboard_completo')
 def dashboard_completo():
    
     ordens = obter_os()
@@ -294,7 +302,6 @@ def relatorio_os_cliente_pdf():
                      as_attachment=True,
                      download_name='relatorio_os_cliente.pdf',
                      mimetype='application/pdf')
-
 
 
 
