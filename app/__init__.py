@@ -6,9 +6,6 @@ from app.db import criar_tabela  # função sqlite3 pura para tabela OS
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-
-
-login_manager = LoginManager()
 login_manager.login_view = 'main.login'
 
 def create_app():
@@ -16,7 +13,12 @@ def create_app():
     app.config['SECRET_KEY'] = 'ordem_servico'
 
     # Caminho absoluto fixo para a pasta banco
-    banco_dir = r"C:\ForPoint\V3\ordem_servico_app\banco"
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+
+   # Caminho absoluto fixo para a pasta banco
+   # banco_dir = r"C:\ForPoint\V3\ordem_servico_app\banco"
+
+    banco_dir = os.path.join(base_dir, '..', 'banco')
     os.makedirs(banco_dir, exist_ok=True)  # cria a pasta banco se não existir
 
     db_path = os.path.join(banco_dir, 'solicitacoes.db')
