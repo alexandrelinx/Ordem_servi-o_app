@@ -10,16 +10,24 @@
             <tr>
                 <th>ID</th>
                 <th>Usuário</th>
+                <th>Perfil</th>
+                <th>Ação</th>
             </tr>
         </thead>
-        <tbody>
-            {% for user in usuarios %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.usuario }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+       <tbody>
+    {% for user in usuarios %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.usuario }}</td>
+        <td>{{ user.perfil }}</td>
+        <td>
+          <a href="{{ url_for('main.trocar_usuario', user_id=user.id) }}" class="btn btn-sm btn-primary">
+            Trocar para este usuário
+          </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
     </table>
 </div>
 

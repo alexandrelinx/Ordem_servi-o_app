@@ -51,7 +51,8 @@ def criar_tabela():
     CREATE TABLE IF NOT EXISTS usuario (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         usuario TEXT UNIQUE NOT NULL,
-        senha_hash TEXT NOT NULL
+        senha_hash TEXT NOT NULL,
+        perfil TEXT NOT NULL CHECK (perfil IN ('admin', 'usuario'))           
      )""")
      
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <title>{% block title %}Ordem de Serviço{% endblock %}</title>
@@ -12,7 +12,7 @@
       overflow-x: hidden;
       margin: 0;
       padding: 0;
-      height: 100vh;
+      min-height: 100vh;
     }
 
     /* Navbar fixa no topo */
@@ -22,7 +22,7 @@
       left: 0;
       height: 56px;
       width: 100%;
-      background-color: #0d6efd; /* cor bootstrap primary */
+      background-color: #0d6efd;
       color: white;
       display: flex;
       align-items: center;
@@ -30,32 +30,37 @@
       z-index: 1030;
     }
 
-     #topbar .navbar-brand {
-     /* margin-left: auto; 
-      font-weight: bold;
-      font-size: 1.2rem; /* opcional, para aumentar a fonte */
+    #topbar .navbar-brand {
       margin-right: auto;
-}
- /*   #topbar .btn-toggle-sidebar {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    /* Botão toggle sidebar */
+    #sidebarToggle {
+      position: fixed;
+      top: 10px;
+      left: 250px; /* ajustado para combinar com largura sidebar */
+      z-index: 1101;
       background: transparent;
       border: none;
       color: white;
       font-size: 1.5rem;
       cursor: pointer;
-       margin-right: 0.5rem;
-    } */
-     #sidebarToggle {
-     background-color: #0d6efd;
-     padding: 6px 10px;
-     border-radius: 4px;
-     }
-
-
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease, left 0.3s ease;
+    }
+    #sidebarToggle:hover,
+    #sidebarToggle:focus {
+      background-color: rgba(255,255,255,0.1);
+      outline: none;
+    }
 
     /* Sidebar */
     #sidebar {
       position: fixed;
-      top: 56px; /* abaixo da navbar */
+      top: 56px;
       left: 0;
       height: calc(100vh - 56px);
       width: 250px;
@@ -70,20 +75,8 @@
       z-index: 1020;
     }
 
-    #sidebarToggle {
-      position: fixed;
-      top: 10px;
-      left: 238px;
-      z-index: 1101; /* acima da navbar e sidebar */
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
     #sidebar.collapsed {
-       width: 40px;               /* 0 - oculta o sidebar por completo  */
+      width: 40px;
       overflow: hidden;
     }
 
@@ -109,6 +102,7 @@
       padding: 0.5rem 1rem;
       white-space: nowrap;
       transition: background-color 0.2s ease;
+      text-decoration: none;
     }
     #sidebar ul.nav li.nav-item > a.nav-link:hover,
     #sidebar ul.nav li.nav-item > a.nav-link.active {
@@ -146,42 +140,67 @@
     }
 
     #content {
-      margin-top: 56px; /* altura navbar */
+      margin-top: 56px;
       margin-left: 250px;
       padding: 2rem;
       transition: margin-left 0.3s ease;
     }
     #content.expanded {
-      margin-left: 70px;
+      margin-left: 40px;
     }
 
     /* Botão logout no final do sidebar */
     #sidebar .logout-btn {
       margin: 1rem;
     }
+
+    #sidebar a.nav-link.mt-3 {
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    #sidebar a.nav-link.mt-3:hover {
+      background-color: #0b5ed7;
+      color: white;
+    }
+    #sidebar a.nav-link.mt-3 i {
+      min-width: 18px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
   <!-- Navbar fixa no topo -->
-  <nav id="topbar">
-   <a href="{{ url_for('main.dashboard_completo') }}" class="navbar-brand mb-0 d-flex align-items-center">
-  <img src="{{ url_for('main.imagens', filename='ordem_de_servico.png') }}"style="height: 50px; margin-right: 20px;">
-  <span class="text"></span>
-</a>
-    <button class="btn-toggle-sidebar" id="sidebarToggle" aria-label="Toggle Sidebar">
+  <nav id="topbar" class="d-flex justify-content-between align-items-center px-3">
+    <a href="{{ url_for('main.dashboard_completo') }}" class="navbar-brand mb-0 d-flex align-items-center">
+      <img src="{{ url_for('main.imagens', filename='ordem_de_servico.png') }}" style="height: 50px; margin-right: 20px;">
+      <span class="text"></span>
+    </a>
+
+    <button class="btn-toggle-sidebar" id="sidebarToggle" aria-label="Toggle Sidebar" aria-expanded="true" aria-controls="sidebar">
       <i class="fas fa-bars"></i>
     </button>
-    <span class="navbar-brand mb-03">SGOS - Sistema Gestor de Ordem de Serviço</span>
+    <!--<span class="navbar-brand mb-3">SGOS - Sistema Gestor de Ordem de Serviço</span> -->
+    <div class="text-center flex-grow-1">
+    <span class="navbar-brand mb-0 fw-bold text-white" style="font-size: 1.2rem;">
+      SGOS - Sistema Gestor de Ordem de Serviço
+    </span>
+  </div>
+  
+    {% if current_user.is_authenticated %}
+  <div class="text-end text-white fw-bold" style="margin-left: auto;">
+    <i class="fas fa-user me-1"></i> {{ current_user.usuario }}
+  </div>
+{% endif %}  
   </nav>
 
   <!-- Sidebar -->
-  <nav id="sidebar" class="d-flex flex-column">
+  <nav id="sidebar" class="d-flex flex-column" aria-label="Sidebar navigation">
     <div>
-    <!--  <a href="{{ url_for('main.dashboard_completo') }}" class="navbar-brand mb-4">
-        <i class="fas fa-tachometer-alt me-2"></i><span class="text">OS System</span>
-      </a> -->
-
       <ul class="nav flex-column">
         <li class="nav-item mt-3">
           <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuOs" role="button" aria-expanded="false" aria-controls="submenuOs">
@@ -235,36 +254,57 @@
             </ul>
           </div>
         </li>
-      
-   
-<li class="nav-item mt-3">
-  <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuAdm" role="button" aria-expanded="false" aria-controls="submenuAdm">
-    <i class="fas fa-user-cog me-2"></i><span class="text"> Adm</span>
-  </a>
-  <div class="collapse" id="submenuAdm">
-    <ul class="nav flex-column submenu">
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('main.cadastro_usuario_menu') }}">
-          <i class="fas fa-user-plus me-2"></i><span class="text"> Cadastro de Usuário</span>
+
+        {% if current_user.is_authenticated and current_user.perfil == 'admin' %}
+        <li class="nav-item mt-3">
+          <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuAdm" role="button" aria-expanded="false" aria-controls="submenuAdm">
+            <i class="fas fa-user-cog me-2"></i><span class="text"> Adm</span>
+          </a>
+          <div class="collapse" id="submenuAdm">
+            <ul class="nav flex-column submenu">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.cadastro_usuario_menu') }}">
+                  <i class="fas fa-user-plus me-2"></i><span class="text"> Cadastro de Usuário</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.consultar_usuario') }}">
+                  <i class="fas fa-users me-2"></i><span class="text"> Consulta de Usuário</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item mt-3">
+          <a href="{{ url_for('main.listar_usuarios') }}" class="nav-link">
+            <i class="fas fa-users-cog me-2"></i><span class="text">Gerenciar Usuários</span>
+          </a>
+        </li>
+        {% endif %}
+          
+     
+      <li class="nav-item mt-3">
+        <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuSair" role="button" aria-expanded="false" aria-controls="submenuSair">
+          <i class="fas fa-sign-out-alt me-2"></i><span class="text"> Sair</span>
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('main.consultar_usuario') }}">
-          <i class="fas fa-users me-2"></i><span class="text"> Consulta de Usuário</span>
-        </a>
+        <div class="collapse" id="submenuSair">
+          <ul class="nav flex-column submenu">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.logout') }}">
+                <i class="fas fa-door-open me-2"></i><span class="text"> Sair do sistema</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.listar_usuarios') }}">
+                <i class="fas fa-exchange-alt me-2"></i><span class="text"> Trocar usuário</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
   </div>
-</li>
-</ul>
- </div>
-    {% if current_user.is_authenticated %}
-      <div class="logout-btn px-3">
-        <a href="{{ url_for('main.logout') }}" class="btn btn-danger w-100">Sair</a>
-      </div>
-    {% endif %}
-  </nav>
-
+</nav>
   <!-- Conteúdo principal -->
   <div id="content">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -282,7 +322,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
   <script>
     const sidebar = document.getElementById('sidebar');
@@ -294,9 +333,13 @@
       if (estado === 'true') {
         sidebar.classList.add('collapsed');
         content.classList.add('expanded');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.style.left = '40px';  // ajusta posição toggle ao sidebar colapsado
       } else {
         sidebar.classList.remove('collapsed');
         content.classList.remove('expanded');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        toggleBtn.style.left = '250px'; // posição padrão
       }
     }
 
@@ -307,6 +350,8 @@
       content.classList.toggle('expanded');
       const estaColapsado = sidebar.classList.contains('collapsed');
       localStorage.setItem('sidebarCollapsed', estaColapsado);
+      toggleBtn.setAttribute('aria-expanded', (!estaColapsado).toString());
+      toggleBtn.style.left = estaColapsado ? '40px' : '250px';  // ajusta posição toggle no clique
     });
   </script>
 </body>
