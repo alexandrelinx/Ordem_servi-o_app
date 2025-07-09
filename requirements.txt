@@ -1,3 +1,5 @@
 Flask
+Flask-Mail
 reportlab
 gunicorn
+twilio

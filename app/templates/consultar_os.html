@@ -70,7 +70,7 @@
             <td class="col-data">{{ os['data_solicitacao'] or '—' }}</td>
             <td class="col-valor">R$ {{ "%.2f"|format(os['valor_servico'] or 0) }}</td>
             <td class="col-acoes">
-              {% if perfil_usuario == 'Admin' %}
+              {% if perfil_usuario|lower|trim == 'admin' %}
                 <a href="{{ url_for('main.alterar_os', os_id=os['id']) }}" class="btn btn-sm btn-primary" title="Editar">✏️</a>
                 <a href="{{ url_for('main.excluir_os_route', os_id=os['id']) }}" class="btn btn-sm btn-danger" title="Excluir" onclick='return confirm("Confirma exclusão da OS #{{ os["id"] }}?")'>🗑️</a>
               {% else %}

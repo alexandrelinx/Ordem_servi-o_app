@@ -36,12 +36,14 @@
       font-size: 1.2rem;
     }
 
-    /* Botão toggle sidebar */
+    /* Botão toggle sidebar dentro da sidebar */
     #sidebarToggle {
-      position: fixed;
-      top: 10px;
-      left: 250px; /* ajustado para combinar com largura sidebar */
-      z-index: 1101;
+     /* position: static; /* dentro do fluxo do sidebar */
+    /*  margin: 1rem auto;*/
+      position: absolute;
+      bottom: 10px;
+      right: 0;
+      margin: 0;
       background: transparent;
       border: none;
       color: white;
@@ -49,8 +51,9 @@
       cursor: pointer;
       padding: 0.25rem 0.5rem;
       border-radius: 4px;
-      transition: background-color 0.2s ease, left 0.3s ease;
+      transition: background-color 0.2s ease, transform 0.3s ease;
     }
+
     #sidebarToggle:hover,
     #sidebarToggle:focus {
       background-color: rgba(255,255,255,0.1);
@@ -69,7 +72,7 @@
       color: white;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: space-between; /* garante topo + botão no final */
       transition: width 0.3s ease;
       overflow-y: auto;
       z-index: 1020;
@@ -78,6 +81,12 @@
     #sidebar.collapsed {
       width: 40px;
       overflow: hidden;
+    }
+
+    /* Gira o ícone da seta quando colapsado */
+    #sidebar.collapsed #sidebarToggle i {
+      transform: rotate(180deg);
+      transition: transform 0.3s ease;
     }
 
     #sidebar .navbar-brand {
@@ -181,21 +190,19 @@
       <span class="text"></span>
     </a>
 
-    <button class="btn-toggle-sidebar" id="sidebarToggle" aria-label="Toggle Sidebar" aria-expanded="true" aria-controls="sidebar">
-      <i class="fas fa-bars"></i>
-    </button>
-    <!--<span class="navbar-brand mb-3">SGOS - Sistema Gestor de Ordem de Serviço</span> -->
+    <!-- REMOVIDO: botão toggle do topo -->
+
     <div class="text-center flex-grow-1">
-    <span class="navbar-brand mb-0 fw-bold text-white" style="font-size: 1.2rem;">
-      SGOS - Sistema Gestor de Ordem de Serviço
-    </span>
-  </div>
-  
+      <span class="navbar-brand mb-0 fw-bold text-white" style="font-size: 1.2rem;">
+        SGOS - Sistema Gestor de Ordem de Serviço
+      </span>
+    </div>
+
     {% if current_user.is_authenticated %}
-  <div class="text-end text-white fw-bold" style="margin-left: auto;">
-    <i class="fas fa-user me-1"></i> {{ current_user.usuario }}
-  </div>
-{% endif %}  
+      <div class="text-end text-white fw-bold" style="margin-left: auto;">
+        <i class="fas fa-user me-1"></i> {{ current_user.usuario }}
+      </div>
+    {% endif %}
   </nav>
 
   <!-- Sidebar -->
@@ -281,30 +288,35 @@
           </a>
         </li>
         {% endif %}
-          
-     
-      <li class="nav-item mt-3">
-        <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuSair" role="button" aria-expanded="false" aria-controls="submenuSair">
-          <i class="fas fa-sign-out-alt me-2"></i><span class="text"> Sair</span>
-        </a>
-        <div class="collapse" id="submenuSair">
-          <ul class="nav flex-column submenu">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.logout') }}">
-                <i class="fas fa-door-open me-2"></i><span class="text"> Sair do sistema</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.listar_usuarios') }}">
-                <i class="fas fa-exchange-alt me-2"></i><span class="text"> Trocar usuário</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-  </div>
-</nav>
+
+        <li class="nav-item mt-3">
+          <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuSair" role="button" aria-expanded="false" aria-controls="submenuSair">
+            <i class="fas fa-sign-out-alt me-2"></i><span class="text"> Sair</span>
+          </a>
+          <div class="collapse" id="submenuSair">
+            <ul class="nav flex-column submenu">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.logout') }}">
+                  <i class="fas fa-door-open me-2"></i><span class="text"> Sair do sistema</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.listar_usuarios') }}">
+                  <i class="fas fa-exchange-alt me-2"></i><span class="text"> Trocar usuário</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Botão toggle sidebar dentro da sidebar no canto inferior -->
+    <button class="btn-toggle-sidebar" id="sidebarToggle" aria-label="Toggle Sidebar" aria-expanded="true" aria-controls="sidebar">
+      <i class="fas fa-angle-double-left"></i>
+    </button>
+  </nav>
+
   <!-- Conteúdo principal -->
   <div id="content">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -334,12 +346,10 @@
         sidebar.classList.add('collapsed');
         content.classList.add('expanded');
         toggleBtn.setAttribute('aria-expanded', 'false');
-        toggleBtn.style.left = '40px';  // ajusta posição toggle ao sidebar colapsado
       } else {
         sidebar.classList.remove('collapsed');
         content.classList.remove('expanded');
         toggleBtn.setAttribute('aria-expanded', 'true');
-        toggleBtn.style.left = '250px'; // posição padrão
       }
     }
 
@@ -351,7 +361,6 @@
       const estaColapsado = sidebar.classList.contains('collapsed');
       localStorage.setItem('sidebarCollapsed', estaColapsado);
       toggleBtn.setAttribute('aria-expanded', (!estaColapsado).toString());
-      toggleBtn.style.left = estaColapsado ? '40px' : '250px';  // ajusta posição toggle no clique
     });
   </script>
 </body>

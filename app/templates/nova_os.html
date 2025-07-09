@@ -1,83 +1,117 @@
 {% extends 'base.html' %}
 {% block title %}Nova Ordem de Serviço{% endblock %}
+
 {% block content %}
-<h2>Nova Ordem de Serviço</h2>
+<h2 class="mb-4">Nova Ordem de Serviço</h2>
+
 <form method="POST">
-    <div class="mb-3">
-        <label>Cliente</label>
-        <input name="cliente" list="clientes" class="form-control" required />
-        <datalist id="clientes">
-            {% for c in clientes %}
-                <option value="{{ c }}"></option>
-            {% endfor %}
-        </datalist>
+    <!-- BLOCO 1: DADOS DO CHAMADO -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <strong>Dados do Chamado</strong>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label>Cliente</label>
+                <input name="cliente" list="clientes" class="form-control" required />
+                <datalist id="clientes">
+                    {% for c in clientes %}
+                        <option value="{{ c }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <label>Solicitante</label>
+                <input name="solicitante" list="solicitantes" class="form-control" required />
+                <datalist id="solicitantes">
+                    {% for s in solicitantes %}
+                        <option value="{{ s }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <label>Equipamento</label>
+                <input name="equipamento" list="equipamentos" class="form-control" required />
+                <datalist id="equipamentos">
+                    {% for e in equipamentos %}
+                        <option value="{{ e }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <label>Setor</label>
+                <input name="setor" list="setores" class="form-control" required />
+                <datalist id="setores">
+                    {% for se in setores %}
+                        <option value="{{ se }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <label>Data Solicitação</label>
+                <input type="date" id="data_solicitacao" name="data_solicitacao" value="{{ data_atual }}" readonly>
+              
+            </div>
+
+            <div class="mb-3">
+                <label>Hora Solicitação</label>
+                <input type="time" id="hora_solicitacao" name="hora_solicitacao" value="{{ hora_atual }}" readonly>
+             
+            </div>
+
+            <div class="mb-3">
+                <label>Problema</label>
+                <textarea name="problema" class="form-control" rows="2" required></textarea>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label>Solicitante</label>
-        <input name="solicitante" list="solicitantes" class="form-control" required />
-        <datalist id="solicitantes">
-            {% for s in solicitantes %}
-                <option value="{{ s }}"></option>
-            {% endfor %}
-        </datalist>
-    </div>
-    <div class="mb-3">
-        <label>Equipamento</label>
-        <input name="equipamento" list="equipamentos" class="form-control" required />
-        <datalist id="equipamentos">
-            {% for e in equipamentos %}
-                <option value="{{ e }}"></option>
-            {% endfor %}
-        </datalist>
-    </div>
-    <div class="mb-3">
-        <label>Setor</label>
-        <input name="setor" list="setores" class="form-control" required />
-        <datalist id="setores">
-            {% for se in setores %}
-                <option value="{{ se }}"></option>
-            {% endfor %}
-        </datalist>
-    </div>
-    <div class="mb-3">
-        <label>Status</label>
-        <select name="status" class="form-select" required>
-            {% for st in status_list %}
-                <option value="{{ st }}">{{ st }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label>Data Solicitação</label>
-        <input type="date" name="data_solicitacao" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Hora Solicitação</label>
-        <input type="time" name="hora_solicitacao" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Problema</label>
-        <textarea name="problema" class="form-control" rows="2" required></textarea>
-    </div>
-    <div class="mb-3">
-        <label>Análise Problema</label>
-        <textarea name="analise_problema" class="form-control" rows="2"></textarea>
-    </div>
-    <div class="mb-3">
-        <label>Solução</label>
-        <textarea name="solucao" class="form-control" rows="2"></textarea>
-    </div>
-    <div class="mb-3">
-        <label>Valor Serviço</label>
-        <input type="number" step="0.01" name="valor_servico" class="form-control" />
-    </div>
-    <div class="mb-3">
-        <label>Data Conclusão</label>
-        <input type="date" name="data_conclusao" class="form-control" />
-    </div>
-    <div class="mb-3">
-        <label>Hora Conclusão</label>
-        <input type="time" name="hora_conclusao" class="form-control" />
+
+    <!-- BLOCO 2: INFORMAÇÕES DE STATUS DO CHAMADO -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <strong>Informações de Status do Chamado</strong>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label>Status</label>
+                <select name="status" class="form-select" required>
+                    {% for st in status_list %}
+                        <option value="{{ st }}">{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Análise do Problema</label>
+                <textarea name="analise_problema" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label>Solução</label>
+                <textarea name="solucao" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label>Valor do Serviço</label>
+                <input type="number" step="0.01" name="valor_servico" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Data Conclusão</label>
+                 <input type="date" id="data_conclusao" name="data_conclusao" value="{{ data_atual }}" required><br/> 
+               
+            </div>
+
+            <div class="mb-3">
+                <label>Hora Conclusão</label>
+                <input type="time" id="hora_conclusao" name="hora_conclusao" value="{{ hora_atual }}" required><br/> 
+                
+            </div>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-success">Salvar</button>
