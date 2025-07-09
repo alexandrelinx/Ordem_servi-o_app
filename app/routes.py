@@ -37,6 +37,11 @@ from flask_mail import Message
 from app import mail 
 from dotenv import load_dotenv # ajuste para seu modelo User
 from datetime import datetime
+import pytz
+from datetime import datetime, timezone
+from app.util.timezone import agora_brasilia
+
+
 load_dotenv()  # carrega as variáveis do .env para o ambiente
 
 main = Blueprint('main', __name__)
@@ -384,8 +389,9 @@ def nova_os():
         return redirect(url_for('main.dashboard_completo'))
     
        # Para GET, gera data e hora atuais:
-    agora = datetime.now()
-    data_atual = agora.strftime('%Y-%m-%dhora_solicitacao,')    # formato para input type=date
+    brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(timezone.utc).astimezone(brasilia)
+    data_atual = agora.strftime('%Y-%m-%d')    # formato para input type=date
     hora_atual = agora.strftime('%H:%M')  
 
     
@@ -459,7 +465,7 @@ def format_date_html_para_br(data_html):
 def format_time_html_para_br(hora_html):
     try:
         # Recebe HH:MM, adiciona :00 para segundos
-        return datetime.strptime(hora_html, "%H:%M").strftime("%H:%M:%S")
+        return datetime.strptime(hora_html, "%H:%M:%S").strftime("%H:%M")
     except Exception:
         return ''
 
@@ -493,11 +499,27 @@ def alterar_os(os_id):
         flash("Ordem de Serviço atualizada com sucesso!", "success")
         return redirect(url_for('main.consultar_os'))
 
+
+    os_registro['data_solicitacao'] = datetime.strptime(
+        os_registro.get('data_solicitacao'), '%d/%m/%Y'
+    ).strftime('%Y-%m-%d') if os_registro.get('data_solicitacao') else ''
+
+    os_registro['data_conclusao'] = datetime.strptime(
+        os_registro.get('data_conclusao'), '%d/%m/%Y'
+    ).strftime('%Y-%m-%d') if os_registro.get('data_conclusao') else ''
+
+    # Já para hora, converte para HH:MM (para input type="time")
+    os_registro['hora_solicitacao'] = os_registro.get('hora_solicitacao')[:5] if os_registro.get('hora_solicitacao') else ''
+    os_registro['hora_conclusao'] = os_registro.get('hora_conclusao')[:5] if os_registro.get('hora_conclusao') else ''
+
+
+
+
 # converte data e hora do formato dd/mm/yyyy e HH:MM:SS para o formato HTML esperado
-    os_registro['data_solicitacao'] = format_date_br_para_html(os_registro.get('data_solicitacao'))
-    os_registro['data_conclusao'] = format_date_br_para_html(os_registro.get('data_conclusao'))
-    os_registro['hora_solicitacao'] = format_time_br_para_html(os_registro.get('hora_solicitacao'))
-    os_registro['hora_conclusao'] = format_time_br_para_html(os_registro.get('hora_conclusao'))
+   # os_registro['data_solicitacao'] = format_date_br_para_html(os_registro.get('data_solicitacao'))
+   # os_registro['data_conclusao'] = format_date_br_para_html(os_registro.get('data_conclusao'))
+   # os_registro['hora_solicitacao'] = format_time_br_para_html(os_registro.get('hora_solicitacao'))
+   # os_registro['hora_conclusao'] = format_time_br_para_html(os_registro.get('hora_conclusao'))
 
 
     clientes = carregar_nomes_clientes()

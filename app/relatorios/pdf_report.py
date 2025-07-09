@@ -36,13 +36,25 @@ def gerar_relatorio_os_por_cliente_pdf(dados, totais):
         canvas.saveState()
         largura, altura = landscape(A4)
 
-        logo_path = "c:/ForPoint/V3/ordem_servico_app/app/imagens/Resolvidodownload.jpg"
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # pasta onde está esse script
+        APP_DIR = os.path.dirname(BASE_DIR)                    # pasta app
+        logo_path = os.path.join(APP_DIR, "imagens", "ordem_de_servico1.jpg")
+
+        print("Logo path:", logo_path)
+        print("Existe a logo?", os.path.exists(logo_path))
+
+        if os.path.exists(logo_path):
+            try:
+                canvas.drawImage(logo_path, 40, altura - 70, width=60, height=40, preserveAspectRatio=True)
+            except Exception as e:
+                print(f"Erro ao desenhar logo: {e}")
+                pass
         if os.path.exists(logo_path):
             try:
                 canvas.drawImage(logo_path, 40, altura - 70, width=60, height=40, preserveAspectRatio=True)
             except Exception:
                 pass
-
+          
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawCentredString(largura / 2.0, altura - 50, "Relatório de OS por Cliente")
         canvas.setFont("Helvetica", 10)

@@ -29,11 +29,17 @@ def gerar_relatorio_pdf(dados_os):
     style_bold = ParagraphStyle('BoldStyle', parent=style_normal, fontName='Helvetica-Bold')
 
     # Logo (ajuste o caminho conforme sua estrutura)
-    logo_path = os.path.join(os.getcwd(),"app", "imagens", "Resolvidodownload.jpg")
+   # logo_path = os.path.join(os.getcwd(),"ordem_servico_app","app", "imagens", "ordem_de_servico1.jpg")
+   # if os.path.exists(logo_path):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    APP_DIR = os.path.dirname(BASE_DIR) # pasta do script atual
+    logo_path = os.path.join(APP_DIR, "imagens", "ordem_de_servico1.jpg")
+    print("Caminho da logo:", logo_path)
     if os.path.exists(logo_path):
         logo = Image(logo_path, width=4*cm, height=2.5*cm)
     else:
         logo = Paragraph("Logo não encontrada", style_normal)
+
     print(logo_path)
     empresa_info = [
         [Paragraph("<b>AMOS Serviços de Tecnologia</b>", style_title)],
