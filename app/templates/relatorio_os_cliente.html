@@ -24,6 +24,17 @@
       {% endfor %}
     </select>
   </div>
+ <div class="col-auto">
+  <label for="status" class="form-label">Filtrar por Status:</label>
+  <select name="status" id="status" class="form-select">
+    <option value="">Todos</option>
+    {% for nome in status_atendimentos %}
+      <option value="{{ nome }}" {% if nome == status_selecionado %}selected{% endif %}>{{ nome }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+
 
   <div class="col-auto">
     <button type="submit" class="btn btn-primary">Filtrar</button>
@@ -31,7 +42,7 @@
 
   <div class="col-auto">
     <!-- Botão para gerar PDF -->
-    <a href="{{ url_for('main.relatorio_os_cliente_pdf', cliente=cliente_selecionado) }}" class="btn btn-danger">Gerar PDF</a>
+   <a href="{{ url_for('main.relatorio_os_cliente_pdf', cliente=cliente_selecionado, status=status_selecionado) }}" class="btn btn-danger">Gerar PDF</a>
   </div>
 </form>
 
@@ -49,7 +60,9 @@
             <th class="col-equipamento">Equipamento</th>
             <th class="col-problema">Problema</th>
             <th class="col-data">Data Conclusão</th>
+            <th class="col-status">Status</th>
             <th class="col-valor">Valor</th>
+          
           </tr>
         </thead>
         <tbody>
@@ -60,10 +73,13 @@
             <td class="col-equipamento">{{ os.equipamento }}</td>
             <td class="col-problema">{{ os.problema }}</td>
             <td class="col-data">{{ os.data_conclusao }}</td>
+            <th class="col-status">{{ os.status }}</th>
             <td class="col-valor">R$ {{ "%.2f"|format(os.valor_servico) }}</td>
+    
           </tr>
           {% endfor %}
           <tr>
+            <td></td>
             <td colspan="5" class="text-end"><strong>Total do Mês:</strong></td>
             <td class="col-valor"><strong>R$ {{ "%.2f"|format(totais.get(cliente, {}).get(mes, 0.0)) }}</strong></td>
           </tr>

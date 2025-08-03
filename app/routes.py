@@ -46,9 +46,6 @@ from twilio.rest import Client
 
 
 
-
-
-
 load_dotenv()  # carrega as variáveis do .env para o ambiente
 
 main = Blueprint('main', __name__)
@@ -118,8 +115,6 @@ def admin_required(f):
             return redirect(url_for('main.dashboard_completo'))
         return f(*args, **kwargs)
     return decorated_function
-
-
 
 @main.route('/cadastro/usuarios', methods=['GET', 'POST'])
 @admin_required
@@ -213,7 +208,6 @@ def listar_usuarios():
         conn.close()
     return render_template('listar_usuarios.html', usuarios=usuarios)
 
-
 @main.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 @admin_required
 def editar_usuario(id):
@@ -278,9 +272,6 @@ def excluir_usuario(id):
         conn.close()
     return redirect(url_for('main.listar_usuarios'))
 
-
-
-
 @main.route('/dashboard')
 @login_required
 def dashboard():
@@ -321,9 +312,6 @@ def dashboard_completo():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-from twilio.rest import Client
-
 
 def enviar_sms(mensagem, celular_destino):
     account_sid = os.getenv('TWILIO_ACCOUNT_SID')
@@ -433,8 +421,6 @@ def enviar_email(destino, assunto, mensagem):
         smtp.login(remetente, senha)
         smtp.send_message(msg)
 
-
-
 def enviar_sms(mensagem, celular_destino):
     account_sid = os.getenv('TWILIO_ACCOUNT_SID')
     auth_token = os.getenv('TWILIO_AUTH_TOKEN')
@@ -460,7 +446,6 @@ def enviar_sms(mensagem, celular_destino):
     except Exception as e:
         print(f"❌ Erro inesperado ao enviar SMS: {e}")
         return False
-
 
 def format_date_br_para_html(data_br):
     try:
@@ -563,7 +548,6 @@ def excluir_os_route(os_id):
     flash("Ordem de Serviço excluída com sucesso!", "success")
     return redirect(url_for('main.consultar_os'))
 
-
 @main.route('/consultar-os')
 @login_required
 def consultar_os():
@@ -575,7 +559,6 @@ def consultar_os():
 
     return render_template('consultar_os.html', ordens=ordens, total=total_valor,
                            cliente=cliente, status=status, perfil_usuario=perfil_usuario )
-
 
 @main.route('/relatorio/<int:os_id>')
 def relatorio_os(os_id):
@@ -590,56 +573,55 @@ def relatorio_os(os_id):
                      download_name=f'OS_{os_id}.pdf',
                      mimetype='application/pdf')
 
-
 @main.route('/relatorio-os-cliente')
 def relatorio_os_cliente():
     cliente_selecionado = request.args.get('cliente', '').strip()
-
+    status_selecionado = request.args.get('status', '').strip()
     # Supondo que 'db' seja seu módulo de acesso ao banco com essa função
-    dados, totais =obter_relatorio_os_por_cliente_com_totais()
-
+    dados, totais = obter_relatorio_os_por_cliente_com_totais(
+        cliente=cliente_selecionado if cliente_selecionado else None,
+        status=status_selecionado if status_selecionado else None
+    )
 
         # Cálculo do total geral de todos os meses de todos os clientes
     total_geral = sum(
         sum(mes_valores.values()) for mes_valores in totais.values()
     )
 
-    if cliente_selecionado:
-        dados = {cliente_selecionado: dados.get(cliente_selecionado, {})}
-        totais = {cliente_selecionado: totais.get(cliente_selecionado, {})}
-    else:
-        # Se nenhum cliente foi selecionado, traz todos os clientes (dados e totais completos)
-        # Não faz nada, mantém os dados originais completos
 
-        # Só pra garantir, cliente_selecionado fica vazio para o template saber que é "todos"
-        cliente_selecionado = ''
     clientes = carregar_nomes_clientes()
+    status_atendimentos = carregar_status_atendimentos()
 
     return render_template('relatorio_os_cliente.html',
                            dados=dados,
                            totais=totais,
                            clientes=clientes,
+                           status_atendimentos=status_atendimentos,
                            cliente_selecionado=cliente_selecionado,
+                            status_selecionado=status_selecionado,
                            total_geral=total_geral )
 
 @main.route('/relatorio-os-cliente/pdf')
 def relatorio_os_cliente_pdf():
     cliente_selecionado = request.args.get('cliente', '').strip()
-    dados, totais = obter_relatorio_os_por_cliente_com_totais()
+    status = request.args.get('status', '').strip()
+
+    # Passa o status como filtro para a função de consulta
+    dados, totais = obter_relatorio_os_por_cliente_com_totais(
+        cliente=cliente_selecionado if cliente_selecionado else None,
+        status=status if status else None
+    )
 
     if cliente_selecionado:
         dados = {cliente_selecionado: dados.get(cliente_selecionado, {})}
         totais = {cliente_selecionado: totais.get(cliente_selecionado, {})}
 
-    buffer = gerar_relatorio_os_por_cliente_pdf (dados, totais)
+    buffer = gerar_relatorio_os_por_cliente_pdf(dados, totais)
 
     return send_file(buffer,
                      as_attachment=True,
                      download_name='relatorio_os_cliente.pdf',
                      mimetype='application/pdf')
-
-
-
 
 # Função auxiliar genérica
 def executar_query(query, params=(), fetch=False):
@@ -665,7 +647,6 @@ def consultar_clientes():
     clientes = executar_query("SELECT * FROM clientes ORDER BY nome", fetch=True)
     return render_template('consultar_cliente.html', clientes=clientes)
 
-
 @main.route('/parametros/clientes/novo', methods=['GET', 'POST'])
 def novo_cliente():
     if request.method == 'POST':
@@ -681,7 +662,6 @@ def novo_cliente():
         return redirect(url_for('main.listar_clientes'))
 
     return render_template('editar_cliente.html', cliente=None, tipo='cliente')
-
 
 @main.route('/parametros/clientes/editar/<int:id>', methods=['GET', 'POST'])
 def editar_cliente(id):
@@ -699,7 +679,6 @@ def editar_cliente(id):
             flash('Cliente não encontrado.', 'danger')
             return redirect(url_for('main.listar_clientes'))
 
-
 @main.route('/parametros/clientes/excluir/<int:id>')
 def excluir_cliente(id):
     executar_query("DELETE FROM clientes WHERE id = ?", (id,))
@@ -714,13 +693,10 @@ def listar_solicitantes():
     solicitantes = executar_query("SELECT * FROM solicitantes ORDER BY nome", fetch=True)
     return render_template('consultar_solicitantes.html', solicitantes=solicitantes)
 
-
-
 @main.route('/parametros/solicitantes')
 def consultar_solicitantes():
     solicitantes = executar_query("SELECT * FROM solicitantes ORDER BY nome", fetch=True)
     return render_template('consultar_solicitantes.html', solicitantes=solicitantes)
-
 
 @main.route('/parametros/solicitantes/novo', methods=['GET', 'POST'])
 def novo_solicitantes():
@@ -752,8 +728,6 @@ def editar_solicitantes(id):
         else:
             flash('Solicitante não encontrado.', 'danger')
             return redirect(url_for('main.listar_solicitantes'))
-
-
 
 @main.route('/parametros/solicitantes/excluir/<int:id>')
 def excluir_solicitantes(id):

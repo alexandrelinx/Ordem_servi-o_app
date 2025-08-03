@@ -10,7 +10,7 @@ from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from app.db import obter_relatorio_os_por_cliente, somar_valores
 from io import BytesIO
 
-def gerar_relatorio_os_por_cliente_pdf(dados, totais):
+def gerar_relatorio_os_por_cliente_pdf(dados, totais,status_filtro=None):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
     elementos = []
@@ -77,10 +77,14 @@ def gerar_relatorio_os_por_cliente_pdf(dados, totais):
         for mes, os_list in meses.items():
             elementos.append(Paragraph(f"<b>Mês: {mes}</b>", styles['Heading3']))
 
-            tabela_data = [["Solicitante", "Data Solicitação", "Problema", "Equipamento", "Data Conclusão", "Valor (R$)"]]
+            tabela_data = [["Solicitante", "Data Solicitação", "Problema", "Equipamento", "Data Conclusão", "Valor (R$)","Status" ]]
             subtotal_mes = 0.0
 
             for ordem in os_list:
+                if status_filtro and ordem.get("status") != status_filtro:
+                    continue  # pula OSs que não têm o status desejado
+
+
                 valor_servico = ordem.get("valor_servico") or 0.0
                 linha = [
                     ordem.get("solicitante", ""),
@@ -88,12 +92,13 @@ def gerar_relatorio_os_por_cliente_pdf(dados, totais):
                     ordem.get("problema", ""),
                     ordem.get("equipamento", ""),
                     ordem.get("data_conclusao", ""),
-                    f'{valor_servico:.2f}'
+                    f'{valor_servico:.2f}',
+                    ordem.get("status", "")
                 ]
                 subtotal_mes += valor_servico
                 tabela_data.append(linha)
 
-            tabela = Table(tabela_data, colWidths=[3*cm, 3*cm, 12*cm, 3*cm, 3*cm, 2.5*cm])
+            tabela = Table(tabela_data, colWidths=[2.5*cm, 3*cm, 12*cm, 3*cm, 3*cm,3*cm,2.5*cm])
             tabela.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),

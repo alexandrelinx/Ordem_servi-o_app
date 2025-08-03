@@ -250,7 +250,7 @@ def obter_os_por_id(os_id):
     return None
     # return row
    
-def obter_relatorio_os_por_cliente():
+def obter_relatorio_os_por_cliente(status_filtro=None):
     """
     Retorna um dict com os dados das OS agrupados por cliente e mês:
     {
@@ -275,13 +275,23 @@ def obter_relatorio_os_por_cliente():
         s.problema,
         e.nome as equipamento,
         s.data_conclusao,
-        s.valor_servico
+        s.valor_servico,
+        st.nome AS status                  
     FROM solicitacoes s
     LEFT JOIN clientes c ON s.cliente_id = c.id
     LEFT JOIN solicitantes so ON s.solicitante_id = so.id
     LEFT JOIN equipamentos e ON s.equipamento_id = e.id
-    ORDER BY c.nome, s.data_solicitacao
-    """)
+    LEFT JOIN status_atendimentos st ON s.status_id = st.id
+     """)
+
+    params = []
+    if status_filtro:
+        query += " WHERE s.status = ?"
+        params.append(status_filtro)
+    query+= "ORDER BY c.nome, s.data_solicitacao"
+
+
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
 
@@ -303,6 +313,7 @@ def obter_relatorio_os_por_cliente():
             "equipamento": row["equipamento"] or "",
             "data_conclusao": row["data_conclusao"] or "",
             "valor_servico": row["valor_servico"] or 0.0,
+            "status": row["status"] or ""
         }
 
         resultado[cliente][mes].append(os_info)
@@ -361,44 +372,44 @@ def somar_valores():
 
 
 
-def obter_relatorio_os_por_cliente_com_totais(cliente=None):
+def obter_relatorio_os_por_cliente_com_totais(cliente=None ,status=None):
     conn = conectar()
     cursor = conn.cursor()
 
-    if cliente:
-        cursor.execute("""
-        SELECT
-            c.nome as cliente,
-            so.nome as solicitante,
-            s.data_solicitacao,
-            s.problema,
-            e.nome as equipamento,
-            s.data_conclusao,
-            s.valor_servico
-        FROM solicitacoes s
-        LEFT JOIN clientes c ON s.cliente_id = c.id
-        LEFT JOIN solicitantes so ON s.solicitante_id = so.id
-        LEFT JOIN equipamentos e ON s.equipamento_id = e.id
-        WHERE c.nome = ?
-        ORDER BY c.nome, s.data_solicitacao
-        """, (cliente,))
-    else:
-        cursor.execute("""
-        SELECT
-            c.nome as cliente,
-            so.nome as solicitante,
-            s.data_solicitacao,
-            s.problema,
-            e.nome as equipamento,
-            s.data_conclusao,
-            s.valor_servico
-        FROM solicitacoes s
-        LEFT JOIN clientes c ON s.cliente_id = c.id
-        LEFT JOIN solicitantes so ON s.solicitante_id = so.id
-        LEFT JOIN equipamentos e ON s.equipamento_id = e.id
-        ORDER BY c.nome, s.data_solicitacao
-        """)
+    base_query = """
+    SELECT
+         c.nome as cliente,
+         so.nome as solicitante,
+         s.data_solicitacao,
+         s.problema,
+         e.nome as equipamento,
+         s.data_conclusao,
+         s.valor_servico,
+         st.nome as status
+    FROM solicitacoes s
+    LEFT JOIN clientes c ON s.cliente_id = c.id
+    LEFT JOIN solicitantes so ON s.solicitante_id = so.id
+    LEFT JOIN equipamentos e ON s.equipamento_id = e.id
+    LEFT JOIN status_atendimentos st ON s.status_id = st.id
+     """ 
 
+    filtros = []
+    parametros = []
+
+    if cliente:
+        filtros.append("c.nome = ?")
+        parametros.append(cliente)
+    if status:
+         filtros.append("st.nome = ?")
+         parametros.append(status)
+
+    if filtros:
+        base_query += " WHERE " + " AND ".join(filtros)
+
+    base_query += " ORDER BY c.nome, s.data_solicitacao"
+
+
+    cursor.execute(base_query, parametros)
     rows = cursor.fetchall()
     conn.close()
 
@@ -408,6 +419,7 @@ def obter_relatorio_os_por_cliente_com_totais(cliente=None):
     for row in rows:
         cliente_nome = row["cliente"] or "Sem Cliente"
         data_solicitacao = row["data_solicitacao"]
+     
         try:
             mes = datetime.strptime(data_solicitacao, "%d/%m/%Y").strftime("%Y/%m")
         except Exception as e:
@@ -421,6 +433,7 @@ def obter_relatorio_os_por_cliente_com_totais(cliente=None):
             "equipamento": row["equipamento"] or "",
             "data_conclusao": row["data_conclusao"] or "",
             "valor_servico": row["valor_servico"] or 0.0,
+            "status": row["status"] or ""
         }
 
         resultado[cliente_nome][mes].append(os_info)
