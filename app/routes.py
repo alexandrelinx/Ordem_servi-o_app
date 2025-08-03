@@ -40,6 +40,13 @@ from datetime import datetime
 import pytz
 from datetime import datetime, timezone
 from app.util.timezone import agora_brasilia
+from twilio.base.exceptions import TwilioRestException
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from twilio.rest import Client
+
+
+
+
 
 
 load_dotenv()  # carrega as variáveis do .env para o ambiente
@@ -426,19 +433,33 @@ def enviar_email(destino, assunto, mensagem):
         smtp.login(remetente, senha)
         smtp.send_message(msg)
 
+
+
 def enviar_sms(mensagem, celular_destino):
     account_sid = os.getenv('TWILIO_ACCOUNT_SID')
     auth_token = os.getenv('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
 
-    message = client.messages.create(
-        body=mensagem,
-        from_='+13133950184',  # Seu número Twilio
-        to=celular_destino
-    )
-    print("SMS enviado SID:", message.sid)
+    if not account_sid or not auth_token:
+        print("⚠️ TWILIO_ACCOUNT_SID ou TWILIO_AUTH_TOKEN não configurados. SMS não enviado.")
+        return False
 
+    try:
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            body=mensagem,
+            from_='+13133950184',  # Seu número Twilio
+            to=celular_destino
+        )
+        print("✅ SMS enviado com sucesso. SID:", message.sid)
+        return True
 
+    except TwilioRestException as e:
+        print(f"❌ Erro do Twilio ao enviar SMS: {e}")
+        return False
+
+    except Exception as e:
+        print(f"❌ Erro inesperado ao enviar SMS: {e}")
+        return False
 
 
 def format_date_br_para_html(data_br):
@@ -468,7 +489,6 @@ def format_time_html_para_br(hora_html):
         return datetime.strptime(hora_html, "%H:%M:%S").strftime("%H:%M")
     except Exception:
         return ''
-
 
 
 @main.route('/alterar-os/<int:os_id>', methods=['GET', 'POST'])
@@ -545,6 +565,7 @@ def excluir_os_route(os_id):
 
 
 @main.route('/consultar-os')
+@login_required
 def consultar_os():
     cliente = request.args.get('cliente')
     status = request.args.get('status')
@@ -568,8 +589,6 @@ def relatorio_os(os_id):
                      as_attachment=True,
                      download_name=f'OS_{os_id}.pdf',
                      mimetype='application/pdf')
-
-
 
 
 @main.route('/relatorio-os-cliente')
@@ -619,3 +638,275 @@ def relatorio_os_cliente_pdf():
                      download_name='relatorio_os_cliente.pdf',
                      mimetype='application/pdf')
 
+
+
+
+# Função auxiliar genérica
+def executar_query(query, params=(), fetch=False):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    if fetch:
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+    conn.commit()
+    conn.close()
+
+# ------------------ CLIENTES ------------------
+
+@main.route('/clientes')
+def listar_clientes():
+    clientes = executar_query("SELECT * FROM clientes ORDER BY nome", fetch=True)
+    return render_template('consultar_cliente.html', clientes=clientes)
+
+@main.route('/parametros/clientes')
+def consultar_clientes():
+    clientes = executar_query("SELECT * FROM clientes ORDER BY nome", fetch=True)
+    return render_template('consultar_cliente.html', clientes=clientes)
+
+
+@main.route('/parametros/clientes/novo', methods=['GET', 'POST'])
+def novo_cliente():
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip().upper()
+
+        if nome:
+            try:
+                executar_query("INSERT INTO clientes (nome) VALUES (?)", (nome,))
+                flash('Cliente adicionado com sucesso!', 'success')
+            except:
+                flash('Erro: cliente já existe ou problema no cadastro.', 'danger')
+
+        return redirect(url_for('main.listar_clientes'))
+
+    return render_template('editar_cliente.html', cliente=None, tipo='cliente')
+
+
+@main.route('/parametros/clientes/editar/<int:id>', methods=['GET', 'POST'])
+def editar_cliente(id):
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip().upper()
+        if nome:
+            executar_query("UPDATE clientes SET nome = ? WHERE id = ?", (nome, id))
+            flash('Cliente atualizado com sucesso!', 'success')
+        return redirect(url_for('main.listar_clientes'))
+    else:
+        cliente = executar_query("SELECT * FROM clientes WHERE id = ?", (id,), fetch=True)
+        if cliente:
+            return render_template('editar_cliente.html', registro=cliente[0], tipo='cliente')
+        else:
+            flash('Cliente não encontrado.', 'danger')
+            return redirect(url_for('main.listar_clientes'))
+
+
+@main.route('/parametros/clientes/excluir/<int:id>')
+def excluir_cliente(id):
+    executar_query("DELETE FROM clientes WHERE id = ?", (id,))
+    flash('Cliente excluído com sucesso!', 'warning')
+    return redirect(url_for('main.listar_clientes'))
+
+
+# ------------------ SOLICITANTES ------------------
+
+@main.route('/solicitantes')
+def listar_solicitantes():
+    solicitantes = executar_query("SELECT * FROM solicitantes ORDER BY nome", fetch=True)
+    return render_template('consultar_solicitantes.html', solicitantes=solicitantes)
+
+
+
+@main.route('/parametros/solicitantes')
+def consultar_solicitantes():
+    solicitantes = executar_query("SELECT * FROM solicitantes ORDER BY nome", fetch=True)
+    return render_template('consultar_solicitantes.html', solicitantes=solicitantes)
+
+
+@main.route('/parametros/solicitantes/novo', methods=['GET', 'POST'])
+def novo_solicitantes():
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip().upper()
+    
+        if nome:
+            try:
+              executar_query("INSERT INTO solicitantes (nome) VALUES (?)", (nome,))
+              flash('Solicitante adicionado com sucesso!', 'success')
+            except:
+             flash('Erro: Solicitante já existe ou problema no cadastro.', 'danger')
+        return redirect(url_for('main.listar_solicitantes'))
+
+    return render_template('editar_solicitantes.html', solicitantes=None, tipo='solicitantes')
+
+@main.route('/parametros/solicitantes/editar/<int:id>',  methods=['GET', 'POST'])
+def editar_solicitantes(id):
+    if request.method == 'POST':
+       nome = request.form.get('nome', '').strip().upper()
+       if nome:
+         executar_query("UPDATE solicitantes SET nome = ? WHERE id = ?", (nome, id))
+         flash('solicitantes atualizado com sucesso!', 'success')
+       return redirect(url_for('main.listar_solicitantes'))
+    else:
+        solicitantes = executar_query("SELECT * FROM solicitantes WHERE id = ?", (id,), fetch=True)
+        if solicitantes:
+            return render_template('editar_solicitantes.html', registro=solicitantes[0], tipo='solicitantes')
+        else:
+            flash('Solicitante não encontrado.', 'danger')
+            return redirect(url_for('main.listar_solicitantes'))
+
+
+
+@main.route('/parametros/solicitantes/excluir/<int:id>')
+def excluir_solicitantes(id):
+    executar_query("DELETE FROM solicitantes WHERE id = ?", (id,))
+    flash('Solicitante excluído com sucesso!', 'warning')
+    return redirect(url_for('main.listar_solicitantes'))
+
+
+# ------------------ EQUIPAMENTOS ------------------
+
+@main.route('/equipamentos')
+def listar_equipamentos():
+    equipamentos = executar_query("SELECT * FROM equipamentos ORDER BY nome", fetch=True)
+    return render_template('consultar_equipamentos.html', equipamentos=equipamentos)
+
+@main.route('/parametros/equipamentos')
+def consultar_equipamentos():
+    equipamentos = executar_query("SELECT * FROM equipamentos ORDER BY nome", fetch=True)
+    return render_template('consultar_equipamentos.html', equipamentos=equipamentos)
+
+@main.route('/parametros/equipamentos/novo',  methods=['GET', 'POST'])
+def novo_equipamentos():
+    if request.method == 'POST':
+      nome = request.form.get('nome', '').strip().upper()
+
+      if nome:
+         try:
+            executar_query("INSERT INTO equipamentos (nome) VALUES (?)", (nome,))
+            flash('Equipamento adicionado com sucesso!', 'success')
+         except:
+            flash('Erro: Equipamento já existe ou problema no cadastro.', 'danger')
+   
+      return redirect(url_for('main.listar_equipamentos'))
+
+    return render_template('editar_equipamentos.html', equipamentos=None, tipo='equipamento')
+
+@main.route('/parametros/equipamentos/editar/<int:id>',methods=['GET', 'POST'])
+def editar_equipamentos(id):
+    if request.method == 'POST':
+      nome = request.form.get('nome', '').strip().upper()
+      if nome:
+        executar_query("UPDATE equipamentos SET nome = ? WHERE id = ?", (nome, id))
+        flash('Equipamento atualizado com sucesso!', 'success')
+      return redirect(url_for('main.listar_equipamentos'))
+    else:
+        equipamentos = executar_query("SELECT * FROM equipamentos WHERE id = ?", (id,), fetch=True)
+        if equipamentos:
+            return render_template('editar_equipamentos.html', registro=equipamentos[0], tipo='equipamento')
+        else:
+            flash('Equipamento não encontrado.', 'danger')
+            return redirect(url_for('main.listar_equipamentos'))
+
+@main.route('/parametros/equipamentos/excluir/<int:id>')
+def excluir_equipamentos(id):
+    executar_query("DELETE FROM equipamentos WHERE id = ?", (id,))
+    flash('equipamentos excluído com sucesso!', 'warning')
+    return redirect(url_for('main.listar_equipamentos'))
+
+
+# ------------------ SETORES ------------------
+
+@main.route('/setores')
+def listar_setores():
+    setores = executar_query("SELECT * FROM setores ORDER BY nome", fetch=True)
+    return render_template('consultar_setores.html', setores=setores)
+
+@main.route('/parametros/setores')
+def consultar_setores():
+    setores = executar_query("SELECT * FROM setores ORDER BY nome", fetch=True)
+    return render_template('consultar_setores.html', setores=setores)
+
+@main.route('/parametros/setores/novo', methods=['GET', 'POST'])
+def novo_setores():
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip().upper()
+        if nome:
+            try:
+              executar_query("INSERT INTO setores (nome) VALUES (?)", (nome,))
+              flash('Setor adicionado com sucesso!', 'success')
+            except:
+              flash('Erro: Setor já existe ou problema no cadastro.', 'danger')
+        return redirect(url_for('main.listar_setores'))
+    return render_template('editar_setores.html', registro=None, tipo='setor')
+ 
+@main.route('/parametros/setores/editar/<int:id>',  methods=['GET', 'POST'])
+def editar_setores(id):
+   if request.method == 'POST':
+       nome = request.form.get('nome', '').strip().upper()
+       if nome:
+           executar_query("UPDATE setores SET nome = ? WHERE id = ?", (nome, id))
+           flash('Setor atualizado com sucesso!', 'success')
+       return redirect(url_for('main.listar_setores'))
+   
+   else:
+       setores = executar_query("SELECT * FROM setores WHERE id = ?", (id,), fetch=True)
+       if setores:
+            return render_template('editar_setores.html', registro=setores[0], tipo='setor')
+       else:
+            flash('Setor não encontrado.', 'danger')
+            return redirect(url_for('main.listar_setores'))
+
+@main.route('/parametros/setores/excluir/<int:id>')
+def excluir_setores(id):
+    executar_query("DELETE FROM setores WHERE id = ?", (id,))
+    flash('Setor excluído com sucesso!', 'warning')
+    return redirect(url_for('main.listar_setores'))
+
+
+# ------------------ STATUS_ATENDIMENTO ------------------
+
+@main.route('/status_atendimentos')
+def listar_status_atendimentos():
+    status_atendimentos = executar_query("SELECT * FROM status_atendimentos ORDER BY nome", fetch=True)
+    return render_template('consultar_status_atendimentos.html', status_atendimentos=status_atendimentos)
+
+@main.route('/parametros/status_atendimentos')
+def consultar_status_atendimentos():
+    status_atendimentos = executar_query("SELECT * FROM status_atendimentos ORDER BY nome", fetch=True)
+    return render_template('consultar_status_atendimentos.html', status_atendimentos=status_atendimentos)
+
+@main.route('/parametros/status_atendimentos/novo', methods=['GET', 'POST'])
+def novo_status_atendimentos():
+   if request.method == 'POST':
+        nome = request.form.get('nome', '').strip().upper()
+
+        if nome:
+           try:
+              executar_query("INSERT INTO status_atendimentos (nome) VALUES (?)", (nome,))
+              flash('Status adicionado com sucesso!', 'success')
+           except:
+             flash('Erro: setor já existe ou problema no cadastro.', 'danger')
+        return redirect(url_for('main.listar_status_atendimentos'))
+   
+   return render_template('editar_status_atendimentos.html', status_atendimentos=None, tipo='status_atendimentos')
+
+@main.route('/parametros/status_atendimentos/editar/<int:id>', methods=['GET', 'POST'])
+def editar_status_atendimentos(id):
+    if request.method == 'POST':
+       nome = request.form.get('nome', '').strip().upper()
+       if nome:
+           executar_query("UPDATE status_atendimentos SET nome = ? WHERE id = ?", (nome, id))
+           flash('Status atualizado com sucesso!', 'success')
+       return redirect(url_for('main.listar_status_atendimentos'))
+    else:
+        status_atendimentos = executar_query("SELECT * FROM status_atendimentos WHERE id = ?", (id,), fetch=True)
+        if status_atendimentos:
+            return render_template('editar_status_atendimentos.html', registro=status_atendimentos[0], tipo='status_atendimentos')
+        else:
+            flash('Cliente não encontrado.', 'danger')
+            return redirect(url_for('main.listar_status_atendimentos'))
+
+@main.route('/parametros/status_atendimentos/excluir/<int:id>')
+def excluir_status_atendimentos(id):
+    executar_query("DELETE FROM status_atendimentos WHERE id = ?", (id,))
+    flash('Status excluído com sucesso!', 'warning')
+    return redirect(url_for('main.listar_status_atendimentos'))

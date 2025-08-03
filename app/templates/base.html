@@ -282,13 +282,47 @@
             </ul>
           </div>
         </li>
-        <li class="nav-item mt-3">
+       <!-- <li class="nav-item mt-3">
           <a href="{{ url_for('main.listar_usuarios') }}" class="nav-link">
             <i class="fas fa-users-cog me-2"></i><span class="text">Gerenciar Usuários</span>
           </a>
-        </li>
-        {% endif %}
+        </li> -->
 
+        <li class="nav-item mt-3">
+      <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuParametros" role="button" aria-expanded="false" aria-controls="submenuParametros">
+    <i class="fas fa-sliders-h me-2"></i><span class="text"> Parâmetros</span>
+  </a>
+  <div class="collapse" id="submenuParametros">
+    <ul class="nav flex-column submenu">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.listar_clientes') }}">
+          <i class="fas fa-user-tag me-2"></i><span class="text"> Clientes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.listar_solicitantes') }}">
+          <i class="fas fa-user-edit me-2"></i><span class="text"> Solicitantes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.listar_equipamentos') }}">
+          <i class="fas fa-tools me-2"></i><span class="text"> Equipamentos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.listar_setores') }}">
+          <i class="fas fa-building me-2"></i><span class="text"> Setores</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.listar_status_atendimentos') }}">
+          <i class="fas fa-clipboard-check me-2"></i><span class="text"> Status de Atendimento</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</li>
+    {% endif %}
         <li class="nav-item mt-3">
           <a class="nav-link fw-bold" data-bs-toggle="collapse" href="#submenuSair" role="button" aria-expanded="false" aria-controls="submenuSair">
             <i class="fas fa-sign-out-alt me-2"></i><span class="text"> Sair</span>

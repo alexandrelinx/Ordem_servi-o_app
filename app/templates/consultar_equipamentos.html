@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Consultar Equipamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Consultar Equipamentos</h3>
+    <a href="{{ url_for('main.novo_equipamentos') }}" class="btn btn-primary mb-3">Novo Equipamento</a>
+    <table class="table table-bordered" id="tabelaEquipamentos">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th class="text-center">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipamento in equipamentos %}
+            <tr>
+                <td>{{ equipamento.id }}</td>
+                <td>{{ equipamento.nome }}</td>
+                <td style="text-align: center;">
+                    <a href="{{ url_for('main.editar_equipamentos', id=equipamento.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{{ url_for('main.excluir_equipamentos', id=equipamento.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?');">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- DataTables -->
+<script>
+    $(document).ready(function() {
+        $('#tabelaEquipamentos').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+            }
+        });
+    });
+</script>
+{% endblock %}

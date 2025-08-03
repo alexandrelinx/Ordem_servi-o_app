@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Consultar Solicitante{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Consultar Solicitante</h3>
+    <a href="{{ url_for('main.novo_solicitantes') }}" class="btn btn-primary mb-3">Novo Solicitante</a>
+    <table class="table table-bordered" id="tabelaSolicitantes">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th class="text-center">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for solicitante in solicitantes %}
+            <tr>
+                <td>{{ solicitante.id }}</td>
+                <td>{{ solicitante.nome }}</td>
+                <td style="text-align: center;">
+                    <a href="{{ url_for('main.editar_solicitantes', id=solicitante.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{{ url_for('main.excluir_solicitantes', id=solicitante.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?');">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- DataTables -->
+<script>
+    $(document).ready(function() {
+        $('#tabelaSolicitantes').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+            }
+        });
+    });
+</script>
+{% endblock %}

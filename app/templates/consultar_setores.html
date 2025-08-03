@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Consultar Setores{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Consultar Setores</h3>
+    <a href="{{ url_for('main.novo_setores') }}" class="btn btn-primary mb-3">Novo Setor</a>
+    <table class="table table-bordered" id="tabelaSetores">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th class="text-center">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for setor in setores %}
+            <tr>
+                <td>{{ setor.id }}</td>
+                <td>{{ setor.nome }}</td>
+                <td style="text-align: center;">
+                    <a href="{{ url_for('main.editar_setores', id=setor.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{{ url_for('main.excluir_setores', id=setor.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?');">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- DataTables -->
+<script>
+    $(document).ready(function() {
+        $('#tabelaSetores').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+            }
+        });
+    });
+</script>
+{% endblock %}
